@@ -37,6 +37,7 @@ python -m http.server 8080
 - 📊 Visual progress bars show completion percentage
 - ⏱️ Automatic time tracking (estimated hours)
 - 🎯 Priority indicators (High/Medium/Low)
+- 📝 Task-level notes for specific details
 
 ### **2. Daily Notes & Journaling**
 - 📝 Write notes for each day
@@ -112,9 +113,14 @@ python -m http.server 8080
 **During Work:**
 ```
 1. Check off tasks as you complete them
-2. Auto-saves your progress every 30 seconds
-3. Tasks turn green when completed
-4. Progress bars update in real-time
+2. Add notes to specific tasks (optional but helpful):
+   - Click "➕ Add Note" button on any task
+   - Document commands, issues, solutions
+   - Auto-saves 1 second after you stop typing
+   - Click "Close" or click button again to collapse
+3. Auto-saves your progress continuously
+4. Tasks turn green when completed
+5. Progress bars update in real-time
 ```
 
 **Evening (End of Day):**
@@ -384,7 +390,48 @@ Overall: Productive day, ahead of schedule.
 - Wins: Record immediately (don't wait!)
 - Evening: Fill "Summary" and "Tomorrow" tabs
 
-### **Tip 3: Adjust the Plan**
+---
+
+### **Tip 3: Use Task Notes for Technical Details**
+
+Task-level notes are perfect for:
+
+**Example - Deploy describe_it Task:**
+```
+📝 Task Notes:
+
+Commands used:
+• npm install -g vercel
+• vercel login
+• vercel --prod
+• vercel env add NEXT_PUBLIC_SUPABASE_URL
+
+Issues encountered:
+• Initial deployment failed - missing env variable
+• Fixed by adding all NEXT_PUBLIC_ vars
+• Build took 2m 15s
+
+Actual time: 45 minutes (estimated 1 hour)
+
+Resources:
+• https://vercel.com/docs/environment-variables
+• Supabase URL: https://xxx.supabase.co
+
+Notes for next time:
+• Remember to add ALL env vars before deploying
+• Check vercel.json is in root directory
+```
+
+**When to use task notes vs day notes:**
+- **Task notes:** Technical details, commands, specific to this task
+- **Day notes:** Strategic overview, decisions affecting multiple tasks
+
+**Button states:**
+- "➕ Add Note" = No note yet (grey button)
+- "📝 View Note" = Note exists (blue button)
+- Click to expand, type, auto-saves, click to close
+
+### **Tip 4: Adjust the Plan**
 
 The plan is a GUIDE, not gospel:
 

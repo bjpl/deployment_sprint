@@ -261,6 +261,100 @@
             font-weight: 500;
         }
 
+        .task-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-note-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            font-size: 0.8em;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-note-btn:hover {
+            background: var(--bg);
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .task-note-btn.has-note {
+            background: #dbeafe;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .task-note-area {
+            margin-top: 12px;
+            padding: 12px;
+            background: #fef3c7;
+            border-radius: 4px;
+            border: 1px solid #fbbf24;
+            display: none;
+        }
+
+        .task-note-area.show {
+            display: block;
+        }
+
+        .task-note-area textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #fbbf24;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.85em;
+            resize: vertical;
+            background: white;
+            line-height: 1.4;
+        }
+
+        .task-note-area textarea:focus {
+            outline: none;
+            border-color: var(--warning);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .task-note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+            color: #92400e;
+            font-weight: 600;
+        }
+
+        .task-note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 0.75em;
+            color: #92400e;
+        }
+
+        .task-save-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .task-save-indicator.show {
+            opacity: 1;
+        }
+
         .notes-section {
             margin-top: 16px;
             padding: 16px;
@@ -944,11 +1038,12 @@
         let state = {
             tasks: {},
             notes: {}, // Structure: { dayId: { summary: '', wins: '', blockers: '', decisions: '', tomorrow: '', lastUpdated: ISO date } }
+            taskNotes: {}, // Structure: { taskId: { note: '', lastUpdated: ISO date } }
             metrics: {},
             currentDay: 1,
             startDate: null,
             projectFocus: [],
-            version: '1.1' // Track version for future migrations
+            version: '1.2' // Track version for future migrations
         };
 
         // Initialize
@@ -1141,10 +1236,12 @@
         function renderTasks(tasks, dayId) {
             return tasks.map(task => {
                 const isCompleted = state.tasks[task.id] || false;
+                const hasNote = state.taskNotes[task.id] && state.taskNotes[task.id].note;
+                const taskNote = state.taskNotes[task.id]?.note || '';
                 const priorityBadge = `<span class="badge ${task.priority}">${task.priority}</span>`;
 
                 return `
-                    <div class="task-item ${isCompleted ? 'completed' : ''}">
+                    <div class="task-item ${isCompleted ? 'completed' : ''}" id="task-${task.id}">
                         <input
                             type="checkbox"
                             class="task-checkbox"
@@ -1154,7 +1251,29 @@
                         <div class="task-content">
                             <div class="task-title">${task.title} ${priorityBadge}</div>
                             <div class="task-description">${task.description}</div>
-                            <span class="task-time">⏱️ ${task.time}</span>
+                            <div class="task-actions">
+                                <span class="task-time">⏱️ ${task.time}</span>
+                                <button class="task-note-btn ${hasNote ? 'has-note' : ''}" onclick="toggleTaskNote('${task.id}', event)">
+                                    ${hasNote ? '📝 View Note' : '➕ Add Note'}
+                                </button>
+                            </div>
+                            <div class="task-note-area" id="task-note-${task.id}">
+                                <div class="task-note-header">
+                                    <span>📝 Task Notes</span>
+                                    <div class="task-save-indicator" id="task-save-${task.id}">
+                                        <span class="indicator-icon">✅</span>
+                                        <span class="indicator-text">Saved</span>
+                                    </div>
+                                </div>
+                                <textarea
+                                    placeholder="Notes for this specific task...&#10;• Commands used&#10;• Issues encountered&#10;• Solutions found&#10;• Links/references"
+                                    oninput="handleTaskNoteInput('${task.id}', this)"
+                                >${taskNote}</textarea>
+                                <div class="task-note-footer">
+                                    <span class="char-count">${taskNote.length} characters</span>
+                                    <button class="task-note-btn" onclick="toggleTaskNote('${task.id}', event)" style="padding: 2px 8px; font-size: 0.75em;">Close</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1436,6 +1555,88 @@
             const targetContent = document.getElementById(`${dayId}-${noteType}-content`);
             if (targetContent) {
                 targetContent.classList.add('active');
+            }
+        }
+
+        // Toggle task note visibility
+        function toggleTaskNote(taskId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            const noteArea = document.getElementById(`task-note-${taskId}`);
+            const btn = document.querySelector(`#task-${taskId} .task-note-btn`);
+
+            if (noteArea) {
+                const isShowing = noteArea.classList.contains('show');
+                noteArea.classList.toggle('show');
+
+                // Focus textarea when opening
+                if (!isShowing) {
+                    const textarea = noteArea.querySelector('textarea');
+                    setTimeout(() => textarea.focus(), 100);
+                }
+            }
+        }
+
+        // Handle task note input with debounced save
+        const debouncedSaveTaskNote = debounce((taskId, value) => {
+            if (!state.taskNotes[taskId]) {
+                state.taskNotes[taskId] = {};
+            }
+            state.taskNotes[taskId].note = value;
+            state.taskNotes[taskId].lastUpdated = new Date().toISOString();
+
+            saveState();
+            showTaskSaveIndicator(taskId, 'saved');
+
+            // Update button text if note exists
+            const btn = document.querySelector(`#task-${taskId} .task-note-btn`);
+            if (btn) {
+                if (value.trim()) {
+                    btn.classList.add('has-note');
+                    btn.textContent = '📝 View Note';
+                } else {
+                    btn.classList.remove('has-note');
+                    btn.textContent = '➕ Add Note';
+                }
+            }
+        }, 1000);
+
+        function handleTaskNoteInput(taskId, textarea) {
+            // Update character count
+            const count = textarea.value.length;
+            const countEl = textarea.parentElement.querySelector('.char-count');
+            if (countEl) {
+                countEl.textContent = `${count} characters`;
+            }
+
+            // Show saving indicator
+            showTaskSaveIndicator(taskId, 'saving');
+
+            // Debounced save
+            debouncedSaveTaskNote(taskId, textarea.value);
+        }
+
+        // Show task save indicator
+        function showTaskSaveIndicator(taskId, status) {
+            const indicator = document.getElementById(`task-save-${taskId}`);
+            if (!indicator) return;
+
+            indicator.classList.add('show');
+
+            if (status === 'saving') {
+                indicator.querySelector('.indicator-icon').textContent = '⏳';
+                indicator.querySelector('.indicator-text').textContent = 'Saving...';
+            } else {
+                indicator.querySelector('.indicator-icon').textContent = '✅';
+                indicator.querySelector('.indicator-text').textContent = 'Saved';
+
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
             }
         }
 

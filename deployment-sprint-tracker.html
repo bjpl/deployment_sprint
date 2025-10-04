@@ -1016,6 +1016,15 @@
                                 { id: 'd25t1', title: 'Community Engagement', time: '2h', description: 'Respond to comments on both launches', priority: 'medium' },
                                 { id: 'd25t2', title: 'Metrics Analysis', time: '1h', description: 'Daily metrics review and planning', priority: 'medium' }
                             ]
+                        },
+                        {
+                            id: 'day27',
+                            title: 'Day 27 (Sunday) - Week 4 Review',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd27t1', title: 'Week 4 Metrics Review', time: '1h', description: 'Analyze launch week results', priority: 'high' },
+                                { id: 'd27t2', title: 'Plan Week 5 Optimizations', time: '1h', description: 'Prioritize improvements based on data', priority: 'high' }
+                            ]
                         }
                     ]
                 },
@@ -1036,6 +1045,15 @@
                             ]
                         },
                         {
+                            id: 'day34',
+                            title: 'Day 34 (Sunday) - Week 5 Review',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd34t1', title: 'Week 5 Metrics Snapshot', time: '1h', description: 'Record growth metrics and conversion rates', priority: 'high' },
+                                { id: 'd34t2', title: 'Plan Week 6 A/B Tests', time: '1h', description: 'Design experiments for next week', priority: 'high' }
+                            ]
+                        },
+                        {
                             id: 'day35-41',
                             title: 'Days 35-41 (Week 6) - Scale & Experiment',
                             hours: 35,
@@ -1044,6 +1062,15 @@
                                 { id: 'd35t2', title: 'Daily Feature Development', time: '2h/day', description: 'Ship requested features', priority: 'high' },
                                 { id: 'd35t3', title: 'Growth Experiments', time: '2h/day', description: 'New channels, guest posts, videos', priority: 'medium' },
                                 { id: 'd35t4', title: 'Metrics & Planning', time: '1h/day', description: 'Review, plan, celebrate wins', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day41',
+                            title: 'Day 41 (Sunday) - Week 6 Review',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd41t1', title: 'Week 6 Metrics Snapshot', time: '1h', description: 'Track A/B test results and feature impact', priority: 'high' },
+                                { id: 'd41t2', title: 'Plan Week 7 Analytics', time: '1h', description: 'Prepare for deep analysis week', priority: 'high' }
                             ]
                         }
                     ]
@@ -1063,6 +1090,15 @@
                                 { id: 'd42t3', title: 'Wednesday: Conversion Funnel', time: '5h', description: 'Fix drop-off points, A/B test', priority: 'high' },
                                 { id: 'd42t4', title: 'Thursday: Churn Analysis', time: '5h', description: 'Interview churned users, fix causes', priority: 'high' },
                                 { id: 'd42t5', title: 'Friday: Revenue Deep Dive', time: '5h', description: 'LTV:CAC, pricing optimization', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day48',
+                            title: 'Day 48 (Sunday) - Week 7 Review',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd48t1', title: 'Week 7 Analytics Summary', time: '1h', description: 'Compile insights from deep analysis week', priority: 'high' },
+                                { id: 'd48t2', title: 'Strategic Decisions Preview', time: '1h', description: 'Prepare for Week 8 decision week', priority: 'high' }
                             ]
                         },
                         {
@@ -1503,7 +1539,7 @@
                         </div>
                     </div>
 
-                    ${dayId === 'day7' || dayId === 'day13' || dayId === 'day21' || dayId === 'day49-55' ? renderMetricsInput(dayId) : ''}
+                    ${['day7', 'day13', 'day21', 'day27', 'day34', 'day41', 'day48', 'day49-55'].includes(dayId) ? renderMetricsInput(dayId) : ''}
                 </div>
             `;
         }
@@ -1515,13 +1551,16 @@
             let fields = [];
             let headerText = '';
 
+            // Week 1 End
             if (dayId === 'day7') {
                 headerText = 'Week 1 Results - Decision Gate';
                 fields = [
                     { key: 'deployedProjects', label: 'Projects Deployed', type: 'number', placeholder: '5' },
                     { key: 'focusProjects', label: 'Focus Projects (names)', type: 'text', placeholder: 'describe_it, subjunctive_practice' }
                 ];
-            } else if (dayId === 'day13') {
+            }
+            // Week 2 End
+            else if (dayId === 'day13') {
                 headerText = 'Week 2 Results - Beta Validation';
                 fields = [
                     { key: 'betaUsers', label: 'Total Beta Users', type: 'number', placeholder: '20' },
@@ -1529,23 +1568,82 @@
                     { key: 'nps', label: 'Would Recommend (%)', type: 'number', placeholder: '75' },
                     { key: 'willingToPay', label: 'Willing to Pay (%)', type: 'number', placeholder: '50' }
                 ];
-            } else if (dayId === 'day21') {
-                headerText = 'Week 4 Results - Launch Metrics';
+            }
+            // Week 4 Launch Day
+            else if (dayId === 'day21') {
+                headerText = 'Day 21 (Launch Monday) - Initial Launch Metrics';
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '50' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '20' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '2' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '10' }
+                ];
+            }
+            // Week 4 End
+            else if (dayId === 'day27') {
+                headerText = 'Week 4 End - Launch Week Results';
                 fields = [
                     { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '150' },
                     { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '60' },
                     { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '8' },
-                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '40' }
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '40' },
+                    { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'number', placeholder: '5' }
                 ];
-            } else if (dayId === 'day49-55') {
-                headerText = 'Week 8 Results - Strategic Decision';
+            }
+            // Week 5 End
+            else if (dayId === 'day34') {
+                headerText = 'Week 5 End - Growth Metrics';
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '250' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '100' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '15' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '100' },
+                    { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'number', placeholder: '6' },
+                    { key: 'churnRate', label: 'Churn Rate (%)', type: 'number', placeholder: '25' }
+                ];
+            }
+            // Week 6 End
+            else if (dayId === 'day41') {
+                headerText = 'Week 6 End - Experimentation Results';
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '400' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '150' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '25' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '200' },
+                    { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'number', placeholder: '6.5' },
+                    { key: 'churnRate', label: 'Churn Rate (%)', type: 'number', placeholder: '20' }
+                ];
+            }
+            // Week 7 End
+            else if (dayId === 'day48') {
+                headerText = 'Week 7 End - Analytics Insights';
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '600' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '220' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '40' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '300' },
+                    { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'number', placeholder: '7' },
+                    { key: 'churnRate', label: 'Churn Rate (%)', type: 'number', placeholder: '18' },
+                    { key: 'ltv', label: 'LTV ($)', type: 'number', placeholder: '60' },
+                    { key: 'cac', label: 'CAC ($)', type: 'number', placeholder: '15' }
+                ];
+            }
+            // Week 8 End
+            else if (dayId === 'day49-55') {
+                headerText = 'Week 8 End - Strategic Decision Point';
                 fields = [
                     { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '800' },
                     { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '300' },
                     { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '50' },
-                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '400' }
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '400' },
+                    { key: 'conversionRate', label: 'Conversion Rate (%)', type: 'number', placeholder: '7.5' },
+                    { key: 'churnRate', label: 'Churn Rate (%)', type: 'number', placeholder: '15' },
+                    { key: 'ltv', label: 'LTV ($)', type: 'number', placeholder: '80' },
+                    { key: 'cac', label: 'CAC ($)', type: 'number', placeholder: '20' }
                 ];
             }
+
+            if (fields.length === 0) return '';
 
             return `
                 <div class="metrics-input">

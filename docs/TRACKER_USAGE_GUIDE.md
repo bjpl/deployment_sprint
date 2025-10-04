@@ -44,23 +44,32 @@ python -m http.server 8080
 - 🔍 Record key decisions and learnings
 - 📅 Track your actual experience
 
-### **3. Metrics Tracking**
-- 📈 Record key metrics at decision gates
+### **3. Enhanced Daily Journaling**
+- 📋 5 note categories per day (Summary, Wins, Blockers, Decisions, Tomorrow)
+- ⏱️ Auto-save as you type (1 second debounce)
+- ✅ Visual save indicator (Saving... → Saved)
+- 🔢 Character count for each note type
+- 🗂️ Organized tabs for easy navigation
+
+### **4. Metrics Tracking**
+- 📈 Record key metrics at decision gates (Days 7, 13, 21, etc.)
 - 💰 Track MRR, signups, active users
 - 📊 Monitor retention and conversion rates
 - 🎯 Visualize progress toward goals
 
-### **4. Data Persistence**
-- 💾 Auto-saves every 30 seconds to browser localStorage
+### **5. Data Persistence**
+- 💾 Auto-saves as you type (notes: 1s delay, tasks: immediate)
 - 🔄 Resume where you left off
 - 📥 Export progress as JSON (backup)
 - 📤 Import previously saved progress
+- ⏰ Background save every 30 seconds
 
-### **5. Smart Organization**
-- 📅 Organized by week → day → task
+### **6. Smart Organization**
+- 📅 Organized by week → day → task → notes
 - 🔽 Collapsible sections to reduce clutter
 - ✅ Completed sections marked visually
 - 🎯 Current week highlighted
+- 🗂️ Tabbed notes for structured journaling
 
 ---
 
@@ -111,19 +120,42 @@ python -m http.server 8080
 **Evening (End of Day):**
 ```
 1. Complete remaining tasks or defer
-2. Write daily notes:
-   - What worked well?
-   - What was challenging?
-   - Key decisions made
-   - Blockers for tomorrow
+
+2. Write daily journal (5 tabs):
+
+   📋 Summary Tab:
+   - Brief overview of the day
+   - Overall status and accomplishments
+
+   🎉 Wins Tab:
+   - What went well? Celebrate!
+   - Successful deployments, features shipped
+   - Positive user feedback
+
+   🚧 Blockers Tab:
+   - What blocked you?
+   - Issues that need fixing
+   - Waiting on approvals/keys
+
+   💡 Decisions Tab:
+   - Key strategic decisions
+   - Prioritization choices
+   - What you chose to focus on or defer
+
+   ➡️ Tomorrow Tab:
+   - Plan for next day
+   - Carry-over tasks
+   - Priorities for morning
+
+   ✅ Auto-saves as you type (see "Saved" indicator)
 
 3. For decision gate days (Day 7, 13, 21, etc.):
-   - Fill in metrics fields
+   - Fill in highlighted metrics fields
    - Record signups, MRR, retention
-   - Make strategic decisions
+   - Make go/no-go decisions
 
 4. Review progress percentage
-5. Close browser (progress is saved)
+5. Close browser (all progress saved automatically)
 ```
 
 ---
@@ -295,29 +327,62 @@ Don't expand all weeks at once (overwhelming).
    - Overwhelming
 ```
 
-### **Tip 2: Use Notes Liberally**
+### **Tip 2: Use the 5-Tab Journal System**
 
-The notes section is your journal:
+Each day has 5 note categories - use them all for best results:
 
-**Good daily notes:**
+**📋 Summary Tab** (Quick overview):
 ```
-Day 4 Notes:
-- describe_it deployed successfully
-- Bug: Image search fails for special characters (reported to Claude)
-- Decision: Focus on describe_it + subjunctive (used both 5+ times)
-- Tomorrow: Fix search bug, deploy aves
-- Energy: 4/5 (productive day!)
+Deployed describe_it and subjunctive_practice successfully.
+Both apps tested and working. Started beta recruitment.
+Overall: Productive day, ahead of schedule.
 ```
 
-**Update metrics at gates:**
+**🎉 Wins Tab** (Celebrate successes):
 ```
-Day 13 Metrics:
-- Beta users: 18 (9 per app)
-- Retention: 65% (11 used 3+ times)
-- NPS: 78% (14 would recommend)
-- Willing to pay: 55% (10 said yes/maybe)
-- Decision: PROCEED to monetization for both apps
+• Successfully deployed describe_it to Vercel (works perfectly!)
+• Fixed CORS bug in subjunctive_practice
+• Got first 5 beta signups for describe_it
+• All health checks passing
+• Learned how to use Railway CLI efficiently
 ```
+
+**🚧 Blockers Tab** (Track issues):
+```
+• Stripe webhook not triggering (need to debug tomorrow)
+• Waiting for Unsplash API key approval (applied today)
+• aves build still has TypeScript errors (defer to Day 2)
+```
+
+**💡 Decisions Tab** (Document choices):
+```
+• Decided to focus on describe_it + subjunctive (used both 5+ times)
+• Pricing decision: $4.99/month for Pro tier (competitive with market)
+• Will defer aves deployment until Month 2 (low personal usage)
+• Using Railway over DigitalOcean (easier deployment)
+```
+
+**➡️ Tomorrow Tab** (Plan ahead):
+```
+• Fix Stripe webhook issue first thing (30 min)
+• Deploy aves to GitHub Pages (3 hours)
+• Test all apps on mobile devices
+• Create unified monitoring dashboard
+• Energy goal: Keep it to 8 hours max
+```
+
+**Why this system works:**
+- Structured thinking (not random notes)
+- Easy to review later (categorized)
+- Celebrates wins (important for motivation!)
+- Tracks blockers (don't forget to fix)
+- Plans ahead (hit ground running tomorrow)
+
+**Pro tip:** Switch tabs as you go through your day:
+- Morning: Check "Tomorrow" tab from yesterday
+- During: Add to "Blockers" as they happen
+- Wins: Record immediately (don't wait!)
+- Evening: Fill "Summary" and "Tomorrow" tabs
 
 ### **Tip 3: Adjust the Plan**
 

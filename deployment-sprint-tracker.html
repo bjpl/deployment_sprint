@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>60-Day Deployment Sprint Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-card .subtext {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        button.secondary {
+            background: var(--text-secondary);
+        }
+
+        button.success {
+            background: var(--success);
+        }
+
+        button.danger {
+            background: var(--danger);
+        }
+
+        .week-section {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .week-section.completed {
+            opacity: 0.7;
+            border-left: 4px solid var(--success);
+        }
+
+        .week-section.current {
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .week-header h2 {
+            font-size: 1.5em;
+            color: var(--text);
+        }
+
+        .week-progress {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .day-card {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .day-card.completed {
+            background: #f0fdf4;
+            border-color: var(--success);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .day-title {
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .day-meta {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .task-list {
+            margin-left: 32px;
+            display: none;
+        }
+
+        .task-list.expanded {
+            display: block;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--surface);
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .task-item.completed {
+            background: #f0fdf4;
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .task-description {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .task-time {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .notes-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .notes-section textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .metrics-input {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .metric-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric-field label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-field input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .collapse-btn {
+            background: transparent;
+            color: var(--primary);
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .collapse-btn:hover {
+            background: var(--bg);
+            transform: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .stat-card .value {
+                font-size: 1.5em;
+            }
+
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 60-Day Deployment Sprint Tracker</h1>
+            <p>Solo AI-Enabled Developer - Multi-Project Deployment</p>
+        </header>
+
+        <div class="progress-overview" id="statsCards"></div>
+
+        <div class="controls">
+            <button onclick="exportProgress()">💾 Export Progress</button>
+            <button onclick="importProgress()" class="secondary">📥 Import Progress</button>
+            <button onclick="resetProgress()" class="danger">🔄 Reset All</button>
+            <button onclick="toggleAllWeeks()" class="secondary">📖 Expand/Collapse All</button>
+        </div>
+
+        <div id="sprintContent"></div>
+    </div>
+
+    <!-- Export/Import Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <h2>Export Progress</h2>
+            <p>Copy this JSON to save your progress:</p>
+            <textarea id="exportData" readonly></textarea>
+            <div style="margin-top: 16px; display: flex; gap: 10px;">
+                <button onclick="copyExport()">📋 Copy to Clipboard</button>
+                <button onclick="closeModal()" class="secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Progress</h2>
+            <p>Paste your exported JSON here:</p>
+            <textarea id="importData" placeholder="Paste JSON here..."></textarea>
+            <div style="margin-top: 16px; display: flex; gap: 10px;">
+                <button onclick="doImport()">✅ Import</button>
+                <button onclick="closeModal()" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sprint data structure
+        const sprintData = {
+            weeks: [
+                {
+                    id: 'week1',
+                    title: 'Week 1: Infrastructure & Quick Wins',
+                    hours: 40,
+                    days: [
+                        {
+                            id: 'day1',
+                            title: 'Day 1 (Monday) - Platform Setup Blitz',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd1t1', title: 'Account Creation Marathon', time: '1.5h', description: 'Sign up for Vercel, Railway, Supabase, OpenAI, Unsplash, Alpha Vantage', priority: 'high' },
+                                { id: 'd1t2', title: 'API Keys Harvest', time: '1h', description: 'Collect all API keys and store in password manager', priority: 'high' },
+                                { id: 'd1t3', title: 'Generate Security Keys', time: '1.5h', description: 'Generate JWT secrets, API keys for all 6 projects', priority: 'high' },
+                                { id: 'd1t4', title: 'Deploy describe_it', time: '1h', description: 'Deploy to Vercel + Supabase, test end-to-end', priority: 'high' },
+                                { id: 'd1t5', title: 'Deploy subjunctive_practice', time: '2h', description: 'Deploy backend to Railway, frontend to Vercel', priority: 'high' },
+                                { id: 'd1t6', title: 'Validation & Monitoring Setup', time: '1h', description: 'Test both apps, create health check script', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day2',
+                            title: 'Day 2 (Tuesday) - Platform Deployments',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd2t1', title: 'Fix aves TypeScript Build', time: '30m', description: 'Exclude test files from production build', priority: 'high' },
+                                { id: 'd2t2', title: 'Generate 50 Exercises for aves', time: '1.5h', description: 'Claude Code generates exercises from existing species', priority: 'high' },
+                                { id: 'd2t3', title: 'Deploy aves to GitHub Pages', time: '1h', description: 'Build and deploy static site', priority: 'high' },
+                                { id: 'd2t4', title: 'Test All 3 Apps', time: '1h', description: 'Comprehensive testing of describe_it, subjunctive, aves', priority: 'high' },
+                                { id: 'd2t5', title: 'Deploy open_learn to Railway', time: '4h', description: 'Setup PostgreSQL/Redis, deploy backend, test scrapers', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day3',
+                            title: 'Day 3 (Wednesday) - Final Deployment + Automation',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd3t1', title: 'Deploy corporate_intel Locally', time: '2h', description: 'Docker Compose setup, initialize database', priority: 'medium' },
+                                { id: 'd3t2', title: 'Import EdTech Companies Data', time: '2h', description: 'Create user, import companies, fetch SEC filings', priority: 'medium' },
+                                { id: 'd3t3', title: 'Create Deployment Automation Scripts', time: '2h', description: 'deploy-all.sh, health-check-all.sh, backup-all.sh', priority: 'high' },
+                                { id: 'd3t4', title: 'Create Unified Monitoring Dashboard', time: '2h', description: 'Streamlit dashboard for all projects', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day4',
+                            title: 'Day 4 (Thursday) - Structured Testing',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd4t1', title: 'Test describe_it Workflow', time: '1h', description: 'Learn 15 Spanish vocabulary words', priority: 'high' },
+                                { id: 'd4t2', title: 'Test subjunctive_practice Workflow', time: '1h', description: 'Complete 20 exercises, check progress', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day5',
+                            title: 'Day 5 (Friday) - Comprehensive App Testing',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd5t1', title: 'Test aves Workflow', time: '1h', description: 'Learn 10 bird names in Spanish', priority: 'medium' },
+                                { id: 'd5t2', title: 'Test open_learn Workflow', time: '1h', description: 'Research Colombian economic news', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day6',
+                            title: 'Day 6 (Saturday) - Bug Fixing Sprint',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd6t1', title: 'Review Validation Logs', time: '30m', description: 'Categorize bugs: Critical, Important, Nice-to-have', priority: 'high' },
+                                { id: 'd6t2', title: 'Fix All Critical Bugs', time: '1.5h', description: 'Fix and deploy critical issues', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day7',
+                            title: 'Day 7 (Sunday) - Week 1 Review & Decision Gate',
+                            hours: 2,
+                            tasks: [
+                                { id: 'd7t1', title: 'Usage Analysis', time: '30m', description: 'Track which apps you used each day', priority: 'high' },
+                                { id: 'd7t2', title: 'Prioritize Projects', time: '30m', description: 'Classify as HIGH/MEDIUM/LOW priority', priority: 'high' },
+                                { id: 'd7t3', title: 'Plan Week 2', time: '1h', description: 'Create detailed plan for focus projects', priority: 'high' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'week2',
+                    title: 'Week 2: Optimization & Beta Prep',
+                    hours: 35,
+                    days: [
+                        {
+                            id: 'day8',
+                            title: 'Day 8 (Monday) - Bug Fixes & UX Improvements',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd8t1', title: 'Improve describe_it UX', time: '2h', description: 'Fix top friction points from Week 1', priority: 'high' },
+                                { id: 'd8t2', title: 'Improve subjunctive_practice UX', time: '2h', description: 'Implement critical fixes and enhancements', priority: 'high' },
+                                { id: 'd8t3', title: 'Create Beta Testing Assets', time: '2h', description: 'Google Forms, email templates, onboarding guides', priority: 'high' },
+                                { id: 'd8t4', title: 'Setup Analytics Tracking', time: '2h', description: 'Add analytics to both apps, create dashboards', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day9',
+                            title: 'Day 9 (Tuesday) - Beta Recruitment',
+                            hours: 6,
+                            tasks: [
+                                { id: 'd9t1', title: 'Recruit describe_it Beta Testers', time: '2h', description: 'Post to Reddit, Discord, language exchange apps', priority: 'high' },
+                                { id: 'd9t2', title: 'Recruit subjunctive_practice Beta Testers', time: '2h', description: 'Spanish learning communities, teachers', priority: 'high' },
+                                { id: 'd9t3', title: 'Process Beta Signups', time: '2h', description: 'Send welcome emails, create tracking sheet', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day10',
+                            title: 'Day 10 (Wednesday) - Beta Onboarding',
+                            hours: 6,
+                            tasks: [
+                                { id: 'd10t1', title: 'Onboard describe_it Beta Users', time: '2h', description: 'Send welcome sequence, provide access', priority: 'high' },
+                                { id: 'd10t2', title: 'Onboard subjunctive_practice Beta Users', time: '2h', description: 'Welcome emails, quick start guides', priority: 'high' },
+                                { id: 'd10t3', title: 'Monitor Beta Activity', time: '2h', description: 'Check analytics, respond to questions, fix critical bugs', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day11',
+                            title: 'Day 11 (Thursday) - Mid-Beta Check-in',
+                            hours: 3,
+                            tasks: [
+                                { id: 'd11t1', title: 'Send Mid-Week Check-in Emails', time: '1h', description: 'Ask for quick feedback, identify blockers', priority: 'medium' },
+                                { id: 'd11t2', title: 'Implement Quick Wins', time: '2h', description: 'Fix common issues reported by 3+ users', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day12',
+                            title: 'Day 12 (Friday) - Feedback Collection',
+                            hours: 3,
+                            tasks: [
+                                { id: 'd12t1', title: 'Send Feedback Request', time: '1h', description: 'Email all beta users with Google Form', priority: 'high' },
+                                { id: 'd12t2', title: 'Analyze Feedback', time: '2h', description: 'Create summary report, identify patterns', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day13',
+                            title: 'Day 13 (Saturday) - Strategic Planning',
+                            hours: 3,
+                            tasks: [
+                                { id: 'd13t1', title: 'Beta Results Review', time: '1h', description: 'Calculate retention, NPS, willingness to pay', priority: 'high' },
+                                { id: 'd13t2', title: 'Plan Weeks 3-4', time: '1h', description: 'Decide which projects to monetize', priority: 'high' },
+                                { id: 'd13t3', title: 'Create Monetization Plan', time: '1h', description: 'Stripe integration roadmap', priority: 'high' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'week3',
+                    title: 'Week 3: Monetization Implementation',
+                    hours: 40,
+                    days: [
+                        {
+                            id: 'day14',
+                            title: 'Day 14 (Sunday) - Stripe Setup & Planning',
+                            hours: 4,
+                            tasks: [
+                                { id: 'd14t1', title: 'Stripe Account Setup', time: '2h', description: 'Create account, configure products, get API keys', priority: 'high' },
+                                { id: 'd14t2', title: 'Generate Payment Integration Code', time: '2h', description: 'Claude generates Stripe code for both apps', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day15',
+                            title: 'Day 15 (Monday) - Payment Backend Implementation',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd15t1', title: 'describe_it Payment Backend', time: '2h', description: 'Implement Stripe routes, webhooks, middleware', priority: 'high' },
+                                { id: 'd15t2', title: 'subjunctive_practice Payment Backend', time: '2h', description: 'FastAPI Stripe integration', priority: 'high' },
+                                { id: 'd15t3', title: 'describe_it Payment Frontend', time: '2h', description: 'Pricing page, billing dashboard, paywalls', priority: 'high' },
+                                { id: 'd15t4', title: 'subjunctive_practice Payment Frontend', time: '2h', description: 'Same pattern for subjunctive', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day16',
+                            title: 'Day 16 (Tuesday) - Payment Testing',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd16t1', title: 'Test describe_it Payment Flow', time: '2h', description: 'Test free tier limits, checkout, webhooks', priority: 'high' },
+                                { id: 'd16t2', title: 'Test subjunctive Payment Flow', time: '2h', description: 'Comprehensive payment testing', priority: 'high' },
+                                { id: 'd16t3', title: 'Switch to Live Mode', time: '2h', description: 'Production API keys, test with real card', priority: 'high' },
+                                { id: 'd16t4', title: 'Create Admin Dashboards', time: '2h', description: 'Revenue tracking, user metrics, MRR', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day17',
+                            title: 'Day 17 (Wednesday) - Public Launch Prep',
+                            hours: 8,
+                            tasks: [
+                                { id: 'd17t1', title: 'Create Demo Videos', time: '1h', description: '2-minute screen captures for each app', priority: 'high' },
+                                { id: 'd17t2', title: 'Capture Screenshots', time: '30m', description: '5-6 screenshots per app for marketing', priority: 'high' },
+                                { id: 'd17t3', title: 'Generate Marketing Copy', time: '30m', description: 'ProductHunt, Reddit, Twitter posts', priority: 'high' },
+                                { id: 'd17t4', title: 'Optimize Landing Pages', time: '2h', description: 'Value prop, CTAs, social proof', priority: 'high' },
+                                { id: 'd17t5', title: 'Draft ProductHunt Posts', time: '1h', description: 'Prepare submissions (don\'t submit yet)', priority: 'high' },
+                                { id: 'd17t6', title: 'SEO Optimization', time: '2h', description: 'Meta tags, sitemaps, schema markup', priority: 'medium' },
+                                { id: 'd17t7', title: 'Plan Launch Calendar', time: '1h', description: 'Schedule posts for Week 4', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day18',
+                            title: 'Day 18 (Thursday) - Critical Bug Fixes',
+                            hours: 4,
+                            tasks: [
+                                { id: 'd18t1', title: 'Fix All Pre-Launch Critical Bugs', time: '4h', description: 'Review and fix all blockers', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day19',
+                            title: 'Day 19 (Friday) - Performance & Security Audit',
+                            hours: 4,
+                            tasks: [
+                                { id: 'd19t1', title: 'Performance Optimization', time: '2h', description: 'Lighthouse audits, optimize slow endpoints', priority: 'high' },
+                                { id: 'd19t2', title: 'Security Audit', time: '2h', description: 'Check for vulnerabilities, harden security', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day20',
+                            title: 'Day 20 (Saturday) - Content Creation',
+                            hours: 4,
+                            tasks: [
+                                { id: 'd20t1', title: 'Write Blog Posts', time: '2h', description: '3 posts about building with AI', priority: 'medium' },
+                                { id: 'd20t2', title: 'Create Social Media Content', time: '1h', description: 'Twitter threads, LinkedIn posts', priority: 'medium' },
+                                { id: 'd20t3', title: 'Create Demo GIFs', time: '1h', description: '10-second demos for social sharing', priority: 'medium' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'week4',
+                    title: 'Week 4: Public Launch',
+                    hours: 35,
+                    days: [
+                        {
+                            id: 'day21',
+                            title: 'Day 21 (Monday) - Soft Launch',
+                            hours: 7,
+                            tasks: [
+                                { id: 'd21t1', title: 'Final Pre-Launch Checks', time: '1h', description: 'Verify all systems operational', priority: 'high' },
+                                { id: 'd21t2', title: 'Reddit Soft Launch', time: '2h', description: 'Post to r/Spanish, r/languagelearning', priority: 'high' },
+                                { id: 'd21t3', title: 'Community Engagement', time: '3h', description: 'Respond to all comments, monitor signups', priority: 'high' },
+                                { id: 'd21t4', title: 'Hotfix Critical Issues', time: '1h', description: 'Fix urgent bugs reported by users', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day22',
+                            title: 'Day 22 (Tuesday) - ProductHunt Launch #1 (describe_it)',
+                            hours: 9,
+                            tasks: [
+                                { id: 'd22t1', title: 'Submit to ProductHunt (6 AM)', time: '1h', description: 'Post describe_it, share on social media', priority: 'high' },
+                                { id: 'd22t2', title: 'ProductHunt Engagement Marathon', time: '4h', description: 'Respond to EVERY comment', priority: 'high' },
+                                { id: 'd22t3', title: 'Monitor Metrics & Deploy Hotfixes', time: '4h', description: 'Track rank, signups, conversions, fix issues', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day23',
+                            title: 'Day 23 (Wednesday) - Post-Launch Support',
+                            hours: 6,
+                            tasks: [
+                                { id: 'd23t1', title: 'Support & Engagement', time: '3h', description: 'Respond to overnight comments, fix bugs', priority: 'high' },
+                                { id: 'd23t2', title: 'Prep subjunctive_practice Launch', time: '3h', description: 'Final testing, refine PH post', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day24',
+                            title: 'Day 24 (Thursday) - ProductHunt Launch #2 (subjunctive)',
+                            hours: 9,
+                            tasks: [
+                                { id: 'd24t1', title: 'Submit subjunctive_practice to ProductHunt', time: '1h', description: 'Early morning submission', priority: 'high' },
+                                { id: 'd24t2', title: 'All-Day Engagement', time: '8h', description: 'Same process as Day 22', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day25',
+                            title: 'Day 25 (Friday) - Post-Launch Engagement',
+                            hours: 3,
+                            tasks: [
+                                { id: 'd25t1', title: 'Community Engagement', time: '2h', description: 'Respond to comments on both launches', priority: 'medium' },
+                                { id: 'd25t2', title: 'Metrics Analysis', time: '1h', description: 'Daily metrics review and planning', priority: 'medium' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'week5-6',
+                    title: 'Weeks 5-6: Iteration & Growth',
+                    hours: 70,
+                    days: [
+                        {
+                            id: 'day28-34',
+                            title: 'Days 28-34 (Week 5) - Optimize Based on Data',
+                            hours: 35,
+                            tasks: [
+                                { id: 'd28t1', title: 'Daily Analytics Review (Mon-Fri)', time: '2h/day', description: 'Check metrics, prioritize tasks', priority: 'high' },
+                                { id: 'd28t2', title: 'Daily Implementation (Mon-Fri)', time: '2h/day', description: 'Ship high-impact improvements', priority: 'high' },
+                                { id: 'd28t3', title: 'Daily Content Marketing (Mon-Fri)', time: '2h/day', description: 'Blog posts, social, tutorials', priority: 'medium' },
+                                { id: 'd28t4', title: 'Evening Support (Mon-Fri)', time: '1h/day', description: 'User emails, community engagement', priority: 'medium' }
+                            ]
+                        },
+                        {
+                            id: 'day35-41',
+                            title: 'Days 35-41 (Week 6) - Scale & Experiment',
+                            hours: 35,
+                            tasks: [
+                                { id: 'd35t1', title: 'Daily A/B Testing', time: '2h/day', description: 'Test pricing, CTAs, onboarding', priority: 'high' },
+                                { id: 'd35t2', title: 'Daily Feature Development', time: '2h/day', description: 'Ship requested features', priority: 'high' },
+                                { id: 'd35t3', title: 'Growth Experiments', time: '2h/day', description: 'New channels, guest posts, videos', priority: 'medium' },
+                                { id: 'd35t4', title: 'Metrics & Planning', time: '1h/day', description: 'Review, plan, celebrate wins', priority: 'medium' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'week7-8',
+                    title: 'Weeks 7-8: Consolidation & Decision',
+                    hours: 60,
+                    days: [
+                        {
+                            id: 'day42-48',
+                            title: 'Days 42-48 (Week 7) - Deep Analytics',
+                            hours: 30,
+                            tasks: [
+                                { id: 'd42t1', title: 'Monday: Cohort Analysis', time: '5h', description: 'Retention by cohort, channel performance', priority: 'high' },
+                                { id: 'd42t2', title: 'Tuesday: Feature Usage Analysis', time: '5h', description: 'Which features drive retention', priority: 'high' },
+                                { id: 'd42t3', title: 'Wednesday: Conversion Funnel', time: '5h', description: 'Fix drop-off points, A/B test', priority: 'high' },
+                                { id: 'd42t4', title: 'Thursday: Churn Analysis', time: '5h', description: 'Interview churned users, fix causes', priority: 'high' },
+                                { id: 'd42t5', title: 'Friday: Revenue Deep Dive', time: '5h', description: 'LTV:CAC, pricing optimization', priority: 'high' }
+                            ]
+                        },
+                        {
+                            id: 'day49-55',
+                            title: 'Days 49-55 (Week 8) - Strategic Decisions',
+                            hours: 30,
+                            tasks: [
+                                { id: 'd49t1', title: 'Monday-Tuesday: Project Scoring', time: '8h', description: 'Score all projects on 4 dimensions', priority: 'high' },
+                                { id: 'd49t2', title: 'Wednesday-Friday: Strategic Planning', time: '12h', description: 'Decide to double down, maintain, or archive each project', priority: 'high' },
+                                { id: 'd49t3', title: 'Weekend: Month 3 Roadmap', time: '10h', description: 'Plan focus for next 30 days', priority: 'high' }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 'month3',
+                    title: 'Month 3 (Days 56-90): Scale Winners',
+                    hours: 120,
+                    days: [
+                        {
+                            id: 'day56-90',
+                            title: 'Days 56-90 - Sustainable Growth Routine',
+                            hours: 120,
+                            tasks: [
+                                { id: 'd56t1', title: 'Daily Development (Mon-Fri)', time: '2h/day', description: 'Feature development for top projects', priority: 'high' },
+                                { id: 'd56t2', title: 'Daily Support (Mon-Fri)', time: '1h/day', description: 'User support and community', priority: 'high' },
+                                { id: 'd56t3', title: 'Daily Marketing (Mon-Fri)', time: '1h/day', description: 'Consistent content creation', priority: 'medium' },
+                                { id: 'd56t4', title: 'Weekly Deep Work (Saturdays)', time: '4h/week', description: 'Major features or optimizations', priority: 'medium' }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // State management
+        let state = {
+            tasks: {},
+            notes: {},
+            metrics: {},
+            currentDay: 1,
+            startDate: null,
+            projectFocus: []
+        };
+
+        // Initialize
+        function init() {
+            loadState();
+            renderStats();
+            renderSprint();
+            startAutoSave();
+        }
+
+        // Load state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('deploymentSprintState');
+            if (saved) {
+                state = JSON.parse(saved);
+            }
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('deploymentSprintState', JSON.stringify(state));
+        }
+
+        // Auto-save every 30 seconds
+        function startAutoSave() {
+            setInterval(saveState, 30000);
+        }
+
+        // Calculate statistics
+        function calculateStats() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+            let totalHours = 0;
+            let completedHours = 0;
+
+            sprintData.weeks.forEach(week => {
+                week.days.forEach(day => {
+                    day.tasks.forEach(task => {
+                        totalTasks++;
+                        const hours = parseFloat(task.time) || 0;
+                        totalHours += hours;
+
+                        if (state.tasks[task.id]) {
+                            completedTasks++;
+                            completedHours += hours;
+                        }
+                    });
+                });
+            });
+
+            return {
+                totalTasks,
+                completedTasks,
+                totalHours: Math.round(totalHours),
+                completedHours: Math.round(completedHours),
+                percentComplete: Math.round((completedTasks / totalTasks) * 100),
+                daysActive: state.startDate ? Math.floor((Date.now() - new Date(state.startDate)) / (1000 * 60 * 60 * 24)) : 0
+            };
+        }
+
+        // Render statistics cards
+        function renderStats() {
+            const stats = calculateStats();
+            const html = `
+                <div class="stat-card">
+                    <h3>Overall Progress</h3>
+                    <div class="value">${stats.percentComplete}%</div>
+                    <div class="subtext">${stats.completedTasks} of ${stats.totalTasks} tasks</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${stats.percentComplete}%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Hours Invested</h3>
+                    <div class="value">${stats.completedHours}h</div>
+                    <div class="subtext">of ${stats.totalHours}h planned</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Days Active</h3>
+                    <div class="value">${stats.daysActive}</div>
+                    <div class="subtext">Sprint day ${state.currentDay} of 90</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Current MRR</h3>
+                    <div class="value">$${state.metrics.mrr || 0}</div>
+                    <div class="subtext">${state.metrics.payingCustomers || 0} paying customers</div>
+                </div>
+            `;
+            document.getElementById('statsCards').innerHTML = html;
+        }
+
+        // Render sprint content
+        function renderSprint() {
+            let html = '';
+
+            sprintData.weeks.forEach((week, weekIdx) => {
+                const weekTasks = [];
+                const weekCompleted = [];
+
+                week.days.forEach(day => {
+                    day.tasks.forEach(task => {
+                        weekTasks.push(task.id);
+                        if (state.tasks[task.id]) weekCompleted.push(task.id);
+                    });
+                });
+
+                const weekProgress = weekTasks.length > 0
+                    ? Math.round((weekCompleted.length / weekTasks.length) * 100)
+                    : 0;
+
+                const isCompleted = weekProgress === 100;
+                const isCurrent = !isCompleted && weekIdx === 0 ||
+                    (weekIdx > 0 && sprintData.weeks[weekIdx - 1].days.every(d =>
+                        d.tasks.every(t => state.tasks[t.id])));
+
+                html += `
+                    <div class="week-section ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}">
+                        <div class="week-header" onclick="toggleWeek('${week.id}')">
+                            <h2>📅 ${week.title}</h2>
+                            <div class="week-progress">${weekProgress}% • ${week.hours}h total</div>
+                        </div>
+                        <div id="${week.id}-content" class="week-content">
+                            ${renderDays(week.days, week.id)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('sprintContent').innerHTML = html;
+        }
+
+        // Render days for a week
+        function renderDays(days, weekId) {
+            return days.map(day => {
+                const dayCompleted = day.tasks.every(t => state.tasks[t.id]);
+                const dayProgress = Math.round((day.tasks.filter(t => state.tasks[t.id]).length / day.tasks.length) * 100);
+
+                return `
+                    <div class="day-card ${dayCompleted ? 'completed' : ''}">
+                        <div class="day-header" onclick="toggleDay('${day.id}')">
+                            <div class="day-title">
+                                <span>${dayCompleted ? '✅' : '⏸️'}</span>
+                                <span>${day.title}</span>
+                            </div>
+                            <div class="day-meta">${dayProgress}% • ${day.hours}h</div>
+                        </div>
+                        <div id="${day.id}-tasks" class="task-list">
+                            ${renderTasks(day.tasks, day.id)}
+                            ${renderDayNotes(day.id)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render tasks for a day
+        function renderTasks(tasks, dayId) {
+            return tasks.map(task => {
+                const isCompleted = state.tasks[task.id] || false;
+                const priorityBadge = `<span class="badge ${task.priority}">${task.priority}</span>`;
+
+                return `
+                    <div class="task-item ${isCompleted ? 'completed' : ''}">
+                        <input
+                            type="checkbox"
+                            class="task-checkbox"
+                            ${isCompleted ? 'checked' : ''}
+                            onchange="toggleTask('${task.id}')"
+                        />
+                        <div class="task-content">
+                            <div class="task-title">${task.title} ${priorityBadge}</div>
+                            <div class="task-description">${task.description}</div>
+                            <span class="task-time">⏱️ ${task.time}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render notes section for a day
+        function renderDayNotes(dayId) {
+            const notes = state.notes[dayId] || '';
+            return `
+                <div class="notes-section">
+                    <h4>📝 Daily Notes & Learnings:</h4>
+                    <textarea
+                        placeholder="What worked? What didn't? Key decisions and learnings..."
+                        onblur="saveNotes('${dayId}', this.value)"
+                    >${notes}</textarea>
+
+                    ${dayId === 'day7' || dayId === 'day13' || dayId === 'day21' || dayId === 'day49-55' ? renderMetricsInput(dayId) : ''}
+                </div>
+            `;
+        }
+
+        // Render metrics input for decision gate days
+        function renderMetricsInput(dayId) {
+            const metrics = state.metrics[dayId] || {};
+
+            let fields = [];
+            if (dayId === 'day7') {
+                fields = [
+                    { key: 'deployedProjects', label: 'Projects Deployed', type: 'number' },
+                    { key: 'focusProjects', label: 'Focus Projects', type: 'text' }
+                ];
+            } else if (dayId === 'day13') {
+                fields = [
+                    { key: 'betaUsers', label: 'Total Beta Users', type: 'number' },
+                    { key: 'retention', label: 'Retention Rate (%)', type: 'number' },
+                    { key: 'nps', label: 'NPS Score (%)', type: 'number' },
+                    { key: 'willingToPay', label: 'Willing to Pay (%)', type: 'number' }
+                ];
+            } else if (dayId === 'day21' || dayId === 'day49-55') {
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number' }
+                ];
+            }
+
+            return `
+                <h4>📊 Key Metrics:</h4>
+                <div class="metrics-input">
+                    ${fields.map(field => `
+                        <div class="metric-field">
+                            <label>${field.label}:</label>
+                            <input
+                                type="${field.type}"
+                                value="${metrics[field.key] || ''}"
+                                onblur="saveMetric('${dayId}', '${field.key}', this.value)"
+                            />
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Toggle task completion
+        function toggleTask(taskId) {
+            state.tasks[taskId] = !state.tasks[taskId];
+            saveState();
+            renderStats();
+            renderSprint();
+        }
+
+        // Save notes
+        function saveNotes(dayId, value) {
+            state.notes[dayId] = value;
+            saveState();
+        }
+
+        // Save metric
+        function saveMetric(dayId, key, value) {
+            if (!state.metrics[dayId]) state.metrics[dayId] = {};
+            state.metrics[dayId][key] = value;
+
+            // Update global MRR if this is an MRR field
+            if (key === 'mrr') {
+                state.metrics.mrr = value;
+            }
+            if (key === 'payingCustomers') {
+                state.metrics.payingCustomers = value;
+            }
+
+            saveState();
+            renderStats();
+        }
+
+        // Toggle week visibility
+        function toggleWeek(weekId) {
+            const content = document.getElementById(`${weekId}-content`);
+            content.classList.toggle('hidden');
+        }
+
+        // Toggle day visibility
+        function toggleDay(dayId) {
+            const tasks = document.getElementById(`${dayId}-tasks`);
+            tasks.classList.toggle('expanded');
+        }
+
+        // Toggle all weeks
+        function toggleAllWeeks() {
+            sprintData.weeks.forEach(week => {
+                const content = document.getElementById(`${week.id}-content`);
+                if (content) {
+                    content.classList.toggle('hidden');
+                }
+            });
+        }
+
+        // Export progress
+        function exportProgress() {
+            const exportData = {
+                state: state,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            document.getElementById('exportData').value = JSON.stringify(exportData, null, 2);
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        // Import progress
+        function importProgress() {
+            document.getElementById('importModal').classList.add('show');
+        }
+
+        // Do import
+        function doImport() {
+            try {
+                const data = JSON.parse(document.getElementById('importData').value);
+                if (data.state) {
+                    state = data.state;
+                    saveState();
+                    renderStats();
+                    renderSprint();
+                    alert('✅ Progress imported successfully!');
+                    closeModal();
+                }
+            } catch (e) {
+                alert('❌ Invalid JSON. Please check your import data.');
+            }
+        }
+
+        // Copy export to clipboard
+        function copyExport() {
+            const textarea = document.getElementById('exportData');
+            textarea.select();
+            document.execCommand('copy');
+            alert('✅ Copied to clipboard!');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('exportModal').classList.remove('show');
+            document.getElementById('importModal').classList.remove('show');
+        }
+
+        // Reset all progress
+        function resetProgress() {
+            if (confirm('⚠️ Are you sure you want to reset ALL progress? This cannot be undone.')) {
+                if (confirm('Really sure? This will delete all your tracked progress and notes.')) {
+                    localStorage.removeItem('deploymentSprintState');
+                    location.reload();
+                }
+            }
+        }
+
+        // Initialize on page load
+        window.onload = init;
+
+        // Save on page unload
+        window.onbeforeunload = () => {
+            saveState();
+        };
+
+        // Close modals on background click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                closeModal();
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Content will be generated by JavaScript -->
+</body>
+</html>

@@ -343,6 +343,34 @@
             color: #92400e;
         }
 
+        .save-btn {
+            background: var(--success);
+            color: white;
+            padding: 6px 16px;
+            font-size: 0.8em;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .save-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        .save-btn:active {
+            transform: translateY(0);
+        }
+
+        .notes-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         .task-save-indicator {
             display: flex;
             align-items: center;
@@ -1266,12 +1294,16 @@
                                     </div>
                                 </div>
                                 <textarea
+                                    id="task-note-text-${task.id}"
                                     placeholder="Notes for this specific task...&#10;• Commands used&#10;• Issues encountered&#10;• Solutions found&#10;• Links/references"
                                     oninput="handleTaskNoteInput('${task.id}', this)"
                                 >${taskNote}</textarea>
                                 <div class="task-note-footer">
                                     <span class="char-count">${taskNote.length} characters</span>
-                                    <button class="task-note-btn" onclick="toggleTaskNote('${task.id}', event)" style="padding: 2px 8px; font-size: 0.75em;">Close</button>
+                                    <div class="notes-actions">
+                                        <button class="save-btn" onclick="saveTaskNoteNow('${task.id}', event)">💾 Save</button>
+                                        <button class="task-note-btn" onclick="toggleTaskNote('${task.id}', event)" style="padding: 4px 12px;">Close</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1327,6 +1359,9 @@
                             >${notesData.summary || ''}</textarea>
                             <div class="notes-footer">
                                 <span class="char-count" id="${dayId}-summary-count">${(notesData.summary || '').length} characters</span>
+                                <div class="notes-actions">
+                                    <button class="save-btn" onclick="saveNoteNow('${dayId}', 'summary')">💾 Save Now</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1338,6 +1373,9 @@
                             >${notesData.wins || ''}</textarea>
                             <div class="notes-footer">
                                 <span class="char-count" id="${dayId}-wins-count">${(notesData.wins || '').length} characters</span>
+                                <div class="notes-actions">
+                                    <button class="save-btn" onclick="saveNoteNow('${dayId}', 'wins')">💾 Save Now</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1349,6 +1387,9 @@
                             >${notesData.blockers || ''}</textarea>
                             <div class="notes-footer">
                                 <span class="char-count" id="${dayId}-blockers-count">${(notesData.blockers || '').length} characters</span>
+                                <div class="notes-actions">
+                                    <button class="save-btn" onclick="saveNoteNow('${dayId}', 'blockers')">💾 Save Now</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1360,6 +1401,9 @@
                             >${notesData.decisions || ''}</textarea>
                             <div class="notes-footer">
                                 <span class="char-count" id="${dayId}-decisions-count">${(notesData.decisions || '').length} characters</span>
+                                <div class="notes-actions">
+                                    <button class="save-btn" onclick="saveNoteNow('${dayId}', 'decisions')">💾 Save Now</button>
+                                </div>
                             </div>
                         </div>
 
@@ -1371,6 +1415,9 @@
                             >${notesData.tomorrow || ''}</textarea>
                             <div class="notes-footer">
                                 <span class="char-count" id="${dayId}-tomorrow-count">${(notesData.tomorrow || '').length} characters</span>
+                                <div class="notes-actions">
+                                    <button class="save-btn" onclick="saveNoteNow('${dayId}', 'tomorrow')">💾 Save Now</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1638,6 +1685,90 @@
                     indicator.classList.remove('show');
                 }, 2000);
             }
+        }
+
+        // Manual save for task note (immediate save on button click)
+        function saveTaskNoteNow(taskId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            const textarea = document.getElementById(`task-note-text-${taskId}`);
+            if (!textarea) return;
+
+            const value = textarea.value;
+
+            // Cancel any pending debounced save
+            if (saveTimers[taskId]) {
+                clearTimeout(saveTimers[taskId]);
+            }
+
+            // Save immediately
+            if (!state.taskNotes[taskId]) {
+                state.taskNotes[taskId] = {};
+            }
+            state.taskNotes[taskId].note = value;
+            state.taskNotes[taskId].lastUpdated = new Date().toISOString();
+
+            saveState();
+            showTaskSaveIndicator(taskId, 'saved');
+
+            // Update button text
+            const btn = document.querySelector(`#task-${taskId} .task-note-btn`);
+            if (btn) {
+                if (value.trim()) {
+                    btn.classList.add('has-note');
+                    btn.textContent = '📝 View Note';
+                } else {
+                    btn.classList.remove('has-note');
+                    btn.textContent = '➕ Add Note';
+                }
+            }
+
+            // Visual feedback on save button
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '✅ Saved!';
+            saveBtn.style.background = '#059669';
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.background = '';
+            }, 1500);
+        }
+
+        // Manual save for day note (immediate save on button click)
+        function saveNoteNow(dayId, noteType) {
+            const textarea = document.getElementById(`${dayId}-${noteType}`);
+            if (!textarea) return;
+
+            const value = textarea.value;
+
+            // Cancel any pending debounced save
+            const timerKey = `${dayId}-${noteType}`;
+            if (saveTimers[timerKey]) {
+                clearTimeout(saveTimers[timerKey]);
+            }
+
+            // Save immediately
+            if (!state.notes[dayId]) {
+                state.notes[dayId] = {};
+            }
+            state.notes[dayId][noteType] = value;
+            state.notes[dayId].lastUpdated = new Date().toISOString();
+
+            saveState();
+            showSaveIndicator(dayId, 'saved');
+
+            // Visual feedback on save button
+            const saveBtn = event.target;
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '✅ Saved!';
+            saveBtn.style.background = '#059669';
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.style.background = '';
+            }, 1500);
         }
 
         // Note: saveMetric replaced by handleMetricInput + debouncedSaveMetric above

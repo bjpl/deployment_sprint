@@ -81,7 +81,8 @@ python -m http.server 8080
 - ✅ 140+ tasks organized by day
 - 💾 Auto-save progress to browser
 - 📊 Real-time statistics and progress bars
-- 📝 Daily notes and journaling
+- 📝 Daily notes and journaling (5-tab system)
+- 📝 Task-level notes (per-task details)
 - 📈 Metrics tracking at decision gates
 - 🔄 Export/import for backups
 
@@ -92,19 +93,55 @@ docs/TRACKER_USAGE_GUIDE.md
 
 ---
 
+### **5. Track Your Metrics**
+
+```bash
+# Companion tool for business metrics:
+metrics-tracker.html
+```
+
+**Portfolio metrics tracking:**
+- 📊 Track signups, active users, paying customers
+- ✨ Auto-calculate conversion, churn, ARPU, profit
+- 📸 Weekly snapshots with trend charts
+- 📋 Copy formatted data to sprint tracker gates
+- 🧮 LTV, CAC, and break-even calculators
+- 📈 Historical trend analysis
+
+**Usage guide:**
+```bash
+docs/METRICS_TRACKER_GUIDE.md
+```
+
+**Quick workflow:**
+```
+Every Sunday:
+1. Gather numbers from Stripe, Vercel, Analytics
+2. Enter into metrics-tracker.html
+3. Save weekly snapshot
+4. Copy to sprint tracker gates
+5. See trends and make decisions
+```
+
+---
+
 ## 📁 Repository Structure
 
 ```
 deployment_sprint/
 │
 ├── 📄 README.md (this file)
-├── 📄 deployment-sprint-tracker.html (interactive tracker)
+├── 📄 deployment-sprint-tracker.html (task/progress tracker)
+├── 📄 metrics-tracker.html (business metrics tracker)
+├── 📄 test-localstorage.html (persistence verification)
+├── 📄 VERIFY_PERSISTENCE.md (localStorage guide)
 │
 ├── 📂 docs/
 │   ├── START_HERE.md (quick reference)
 │   ├── COMPREHENSIVE_DEPLOYMENT_ANALYSIS.md (strategy)
 │   ├── SOLO_DEVELOPER_EFFICIENCY_ROADMAP.md (tactics)
-│   ├── TRACKER_USAGE_GUIDE.md (tracker manual)
+│   ├── TRACKER_USAGE_GUIDE.md (progress tracker manual)
+│   ├── METRICS_TRACKER_GUIDE.md (metrics tracker manual)
 │   │
 │   └── 📂 [project-name]/ (original deployment docs)
 │       ├── subjunctive_practice/ (5 files)

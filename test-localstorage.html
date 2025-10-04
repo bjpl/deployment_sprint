@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>localStorage Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .pass { background: #d1fae5; color: #065f46; }
+        .fail { background: #fee2e2; color: #991b1b; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>localStorage Persistence Test</h1>
+    <p>This tests if localStorage works in your browser and persists across page reloads.</p>
+
+    <div id="results"></div>
+
+    <h2>Manual Tests:</h2>
+    <button onclick="writeTest()">1. Write Test Data</button>
+    <button onclick="readTest()">2. Read Test Data</button>
+    <button onclick="clearTest()">3. Clear Test Data</button>
+    <br><br>
+    <button onclick="location.reload()">🔄 Reload Page (Test Persistence)</button>
+
+    <h2>Instructions:</h2>
+    <ol>
+        <li>Click "1. Write Test Data" - Should see success message</li>
+        <li>Click "🔄 Reload Page" - Page will reload</li>
+        <li>After reload, click "2. Read Test Data" - Should show the same data</li>
+        <li>If it shows the data = ✅ localStorage works!</li>
+        <li>If it says "No data" = ❌ localStorage not working</li>
+    </ol>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message, isPass = true) {
+            const div = document.createElement('div');
+            div.className = `test-result ${isPass ? 'pass' : 'fail'}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        // Run automatic tests on load
+        window.onload = () => {
+            log('✅ Page loaded successfully');
+
+            // Test 1: Check if localStorage is available
+            if (typeof(Storage) !== 'undefined') {
+                log('✅ localStorage is available in this browser');
+            } else {
+                log('❌ localStorage NOT available!', false);
+                return;
+            }
+
+            // Test 2: Check for previously saved test data
+            const testData = localStorage.getItem('persistenceTest');
+            if (testData) {
+                const data = JSON.parse(testData);
+                log('✅ PERSISTENCE TEST PASSED! Found data from previous session:');
+                log(`   Saved at: ${new Date(data.timestamp).toLocaleString()}`);
+                log(`   Message: "${data.message}"`);
+                log(`   Reload count: ${data.reloadCount}`);
+
+                // Increment reload count
+                data.reloadCount++;
+                data.lastReload = new Date().toISOString();
+                localStorage.setItem('persistenceTest', JSON.stringify(data));
+            } else {
+                log('ℹ️  No previous test data found (first time running test)');
+            }
+
+            // Test 3: Check deployment sprint tracker data
+            const sprintData = localStorage.getItem('deploymentSprintState');
+            if (sprintData) {
+                const data = JSON.parse(sprintData);
+                const tasksCount = Object.keys(data.tasks || {}).length;
+                const notesCount = Object.keys(data.notes || {}).length;
+                const taskNotesCount = Object.keys(data.taskNotes || {}).length;
+
+                log('✅ Sprint Tracker data found:');
+                log(`   Completed tasks: ${tasksCount}`);
+                log(`   Day notes: ${notesCount}`);
+                log(`   Task notes: ${taskNotesCount}`);
+                log(`   Version: ${data.version || '1.0'}`);
+
+                const lastSave = localStorage.getItem('deploymentSprintLastSave');
+                if (lastSave) {
+                    log(`   Last saved: ${new Date(lastSave).toLocaleString()}`);
+                }
+            } else {
+                log('ℹ️  No sprint tracker data found (haven\'t used tracker yet)');
+            }
+
+            // Test 4: Check storage quota
+            if (navigator.storage && navigator.storage.estimate) {
+                navigator.storage.estimate().then(estimate => {
+                    const usedMB = (estimate.usage / 1024 / 1024).toFixed(2);
+                    const quotaMB = (estimate.quota / 1024 / 1024).toFixed(2);
+                    log(`ℹ️  Storage used: ${usedMB} MB of ${quotaMB} MB available`);
+                });
+            }
+        };
+
+        function writeTest() {
+            const data = {
+                message: 'Test data from localStorage persistence test',
+                timestamp: new Date().toISOString(),
+                reloadCount: 1
+            };
+
+            try {
+                localStorage.setItem('persistenceTest', JSON.stringify(data));
+                log('✅ Test data written successfully!');
+                log('   Now reload the page to test persistence...');
+            } catch (e) {
+                log('❌ Failed to write: ' + e.message, false);
+            }
+        }
+
+        function readTest() {
+            const data = localStorage.getItem('persistenceTest');
+            if (data) {
+                const parsed = JSON.parse(data);
+                log('✅ Data read successfully:');
+                log(`   Message: "${parsed.message}"`);
+                log(`   Saved: ${new Date(parsed.timestamp).toLocaleString()}`);
+                log(`   Reload count: ${parsed.reloadCount}`);
+            } else {
+                log('❌ No test data found. Click "1. Write Test Data" first.', false);
+            }
+        }
+
+        function clearTest() {
+            localStorage.removeItem('persistenceTest');
+            log('ℹ️  Test data cleared. Click "1. Write Test Data" to start over.');
+        }
+    </script>
+</body>
+</html>

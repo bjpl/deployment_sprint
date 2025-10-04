@@ -1145,19 +1145,37 @@
         // Save state to localStorage
         function saveState() {
             try {
-                localStorage.setItem('deploymentSprintState', JSON.stringify(state));
+                const stateString = JSON.stringify(state);
+                localStorage.setItem('deploymentSprintState', stateString);
                 localStorage.setItem('deploymentSprintLastSave', new Date().toISOString());
+
+                // Verify save succeeded by reading back
+                const verified = localStorage.getItem('deploymentSprintState');
+                if (!verified || verified !== stateString) {
+                    throw new Error('Save verification failed');
+                }
+
+                console.log('State saved successfully. Size:', Math.round(stateString.length / 1024), 'KB');
                 return true;
             } catch (e) {
                 console.error('Failed to save state:', e);
-                alert('⚠️ Failed to save progress. Try exporting as backup.');
+
+                // Check if quota exceeded
+                if (e.name === 'QuotaExceededError') {
+                    alert('⚠️ Storage quota exceeded! Your notes may be too large. Please export your progress as backup and consider trimming old notes.');
+                } else {
+                    alert('⚠️ Failed to save progress. Try exporting as backup. Error: ' + e.message);
+                }
                 return false;
             }
         }
 
         // Auto-save every 30 seconds
         function startAutoSave() {
-            setInterval(saveState, 30000);
+            setInterval(() => {
+                saveState();
+                console.log('Background auto-save completed:', new Date().toLocaleTimeString());
+            }, 30000);
         }
 
         // Calculate statistics
@@ -1881,12 +1899,30 @@
         }
 
         // Initialize on page load
-        window.onload = init;
+        window.onload = () => {
+            init();
+            console.log('Sprint Tracker loaded. Version:', state.version);
+            console.log('localStorage available:', typeof(Storage) !== 'undefined');
 
-        // Save on page unload
-        window.onbeforeunload = () => {
-            saveState();
+            const lastSave = localStorage.getItem('deploymentSprintLastSave');
+            if (lastSave) {
+                console.log('Last save:', new Date(lastSave).toLocaleString());
+            }
         };
+
+        // Save on page unload (critical for data persistence)
+        window.addEventListener('beforeunload', (e) => {
+            saveState();
+            console.log('Saving state before page close...');
+        });
+
+        // Save when page becomes hidden (browser tab switch, minimize)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                saveState();
+                console.log('Saving state (page hidden)...');
+            }
+        });
 
         // Close modals on background click
         document.addEventListener('click', (e) => {

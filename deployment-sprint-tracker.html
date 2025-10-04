@@ -262,27 +262,137 @@
         }
 
         .notes-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--surface);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .notes-header h4 {
+            font-size: 0.95em;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .notes-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .note-tab {
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .note-tab:hover {
+            background: var(--border);
+        }
+
+        .note-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .note-input-container {
+            position: relative;
         }
 
         .notes-section textarea {
             width: 100%;
-            min-height: 80px;
+            min-height: 120px;
             padding: 12px;
             border: 1px solid var(--border);
             border-radius: 4px;
             font-family: inherit;
             font-size: 0.9em;
             resize: vertical;
+            transition: border-color 0.2s;
+            line-height: 1.5;
+        }
+
+        .notes-section textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .notes-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .save-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
+        .save-indicator.saving {
+            color: var(--warning);
+        }
+
+        .save-indicator.saved {
+            color: var(--success);
+        }
+
+        .char-count {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .note-type-content {
+            display: none;
+        }
+
+        .note-type-content.active {
+            display: block;
         }
 
         .metrics-input {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
-            margin-top: 12px;
+            margin-top: 16px;
+            padding: 16px;
+            background: #fef3c7;
+            border-radius: 6px;
+            border: 1px solid #fbbf24;
+        }
+
+        .metrics-header {
+            grid-column: 1 / -1;
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .metric-field {
@@ -302,6 +412,14 @@
             border: 1px solid var(--border);
             border-radius: 4px;
             font-size: 0.9em;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .metric-field input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .progress-bar {
@@ -825,11 +943,12 @@
         // State management
         let state = {
             tasks: {},
-            notes: {},
+            notes: {}, // Structure: { dayId: { summary: '', wins: '', blockers: '', decisions: '', tomorrow: '', lastUpdated: ISO date } }
             metrics: {},
             currentDay: 1,
             startDate: null,
-            projectFocus: []
+            projectFocus: [],
+            version: '1.1' // Track version for future migrations
         };
 
         // Initialize
@@ -844,13 +963,46 @@
         function loadState() {
             const saved = localStorage.getItem('deploymentSprintState');
             if (saved) {
-                state = JSON.parse(saved);
+                const loadedState = JSON.parse(saved);
+
+                // Migrate old note format to new format if needed
+                if (loadedState.notes) {
+                    Object.keys(loadedState.notes).forEach(dayId => {
+                        const note = loadedState.notes[dayId];
+                        // If old format (string), convert to new format (object)
+                        if (typeof note === 'string') {
+                            loadedState.notes[dayId] = {
+                                summary: note,
+                                wins: '',
+                                blockers: '',
+                                decisions: '',
+                                tomorrow: '',
+                                lastUpdated: new Date().toISOString()
+                            };
+                        }
+                    });
+                }
+
+                state = loadedState;
+
+                // Set start date if not set
+                if (!state.startDate && Object.keys(state.tasks).length > 0) {
+                    state.startDate = new Date().toISOString();
+                }
             }
         }
 
         // Save state to localStorage
         function saveState() {
-            localStorage.setItem('deploymentSprintState', JSON.stringify(state));
+            try {
+                localStorage.setItem('deploymentSprintState', JSON.stringify(state));
+                localStorage.setItem('deploymentSprintLastSave', new Date().toISOString());
+                return true;
+            } catch (e) {
+                console.error('Failed to save state:', e);
+                alert('⚠️ Failed to save progress. Try exporting as backup.');
+                return false;
+            }
         }
 
         // Auto-save every 30 seconds
@@ -1011,14 +1163,98 @@
 
         // Render notes section for a day
         function renderDayNotes(dayId) {
-            const notes = state.notes[dayId] || '';
+            const notesData = state.notes[dayId] || {
+                summary: '',
+                wins: '',
+                blockers: '',
+                decisions: '',
+                tomorrow: ''
+            };
+
             return `
                 <div class="notes-section">
-                    <h4>📝 Daily Notes & Learnings:</h4>
-                    <textarea
-                        placeholder="What worked? What didn't? Key decisions and learnings..."
-                        onblur="saveNotes('${dayId}', this.value)"
-                    >${notes}</textarea>
+                    <div class="notes-header">
+                        <h4>📝 Daily Journal</h4>
+                        <div class="save-indicator" id="${dayId}-save-indicator">
+                            <span class="indicator-icon">💾</span>
+                            <span class="indicator-text">Saved</span>
+                        </div>
+                    </div>
+
+                    <div class="notes-tabs">
+                        <div class="note-tab active" onclick="switchNoteTab('${dayId}', 'summary')">
+                            📋 Summary
+                        </div>
+                        <div class="note-tab" onclick="switchNoteTab('${dayId}', 'wins')">
+                            🎉 Wins
+                        </div>
+                        <div class="note-tab" onclick="switchNoteTab('${dayId}', 'blockers')">
+                            🚧 Blockers
+                        </div>
+                        <div class="note-tab" onclick="switchNoteTab('${dayId}', 'decisions')">
+                            💡 Decisions
+                        </div>
+                        <div class="note-tab" onclick="switchNoteTab('${dayId}', 'tomorrow')">
+                            ➡️ Tomorrow
+                        </div>
+                    </div>
+
+                    <div class="note-input-container">
+                        <div class="note-type-content active" id="${dayId}-summary-content">
+                            <textarea
+                                id="${dayId}-summary"
+                                placeholder="Brief overview of the day's accomplishments and status..."
+                                oninput="handleNoteInput('${dayId}', 'summary', this)"
+                            >${notesData.summary || ''}</textarea>
+                            <div class="notes-footer">
+                                <span class="char-count" id="${dayId}-summary-count">${(notesData.summary || '').length} characters</span>
+                            </div>
+                        </div>
+
+                        <div class="note-type-content" id="${dayId}-wins-content">
+                            <textarea
+                                id="${dayId}-wins"
+                                placeholder="What went well today? Celebrate your wins! 🎉&#10;• Successfully deployed describe_it&#10;• Fixed critical CORS bug&#10;• Got first 5 beta signups"
+                                oninput="handleNoteInput('${dayId}', 'wins', this)"
+                            >${notesData.wins || ''}</textarea>
+                            <div class="notes-footer">
+                                <span class="char-count" id="${dayId}-wins-count">${(notesData.wins || '').length} characters</span>
+                            </div>
+                        </div>
+
+                        <div class="note-type-content" id="${dayId}-blockers-content">
+                            <textarea
+                                id="${dayId}-blockers"
+                                placeholder="What blocked you? What needs fixing? 🚧&#10;• Vercel deployment failing (need to debug)&#10;• Stripe webhook not triggering&#10;• Waiting for API key approval"
+                                oninput="handleNoteInput('${dayId}', 'blockers', this)"
+                            >${notesData.blockers || ''}</textarea>
+                            <div class="notes-footer">
+                                <span class="char-count" id="${dayId}-blockers-count">${(notesData.blockers || '').length} characters</span>
+                            </div>
+                        </div>
+
+                        <div class="note-type-content" id="${dayId}-decisions-content">
+                            <textarea
+                                id="${dayId}-decisions"
+                                placeholder="Key decisions made today 💡&#10;• Decided to focus on describe_it + subjunctive (most usage)&#10;• Pricing: $4.99/month for Pro tier&#10;• Will defer aves until Month 2"
+                                oninput="handleNoteInput('${dayId}', 'decisions', this)"
+                            >${notesData.decisions || ''}</textarea>
+                            <div class="notes-footer">
+                                <span class="char-count" id="${dayId}-decisions-count">${(notesData.decisions || '').length} characters</span>
+                            </div>
+                        </div>
+
+                        <div class="note-type-content" id="${dayId}-tomorrow-content">
+                            <textarea
+                                id="${dayId}-tomorrow"
+                                placeholder="Plan for tomorrow ➡️&#10;• Deploy aves to GitHub Pages&#10;• Test all 3 apps on mobile&#10;• Create monitoring dashboard&#10;• Fix bug from today's blockers"
+                                oninput="handleNoteInput('${dayId}', 'tomorrow', this)"
+                            >${notesData.tomorrow || ''}</textarea>
+                            <div class="notes-footer">
+                                <span class="char-count" id="${dayId}-tomorrow-count">${(notesData.tomorrow || '').length} characters</span>
+                            </div>
+                        </div>
+                    </div>
 
                     ${dayId === 'day7' || dayId === 'day13' || dayId === 'day21' || dayId === 'day49-55' ? renderMetricsInput(dayId) : ''}
                 </div>
@@ -1030,37 +1266,54 @@
             const metrics = state.metrics[dayId] || {};
 
             let fields = [];
+            let headerText = '';
+
             if (dayId === 'day7') {
+                headerText = 'Week 1 Results - Decision Gate';
                 fields = [
-                    { key: 'deployedProjects', label: 'Projects Deployed', type: 'number' },
-                    { key: 'focusProjects', label: 'Focus Projects', type: 'text' }
+                    { key: 'deployedProjects', label: 'Projects Deployed', type: 'number', placeholder: '5' },
+                    { key: 'focusProjects', label: 'Focus Projects (names)', type: 'text', placeholder: 'describe_it, subjunctive_practice' }
                 ];
             } else if (dayId === 'day13') {
+                headerText = 'Week 2 Results - Beta Validation';
                 fields = [
-                    { key: 'betaUsers', label: 'Total Beta Users', type: 'number' },
-                    { key: 'retention', label: 'Retention Rate (%)', type: 'number' },
-                    { key: 'nps', label: 'NPS Score (%)', type: 'number' },
-                    { key: 'willingToPay', label: 'Willing to Pay (%)', type: 'number' }
+                    { key: 'betaUsers', label: 'Total Beta Users', type: 'number', placeholder: '20' },
+                    { key: 'retention', label: 'Retention Rate (%)', type: 'number', placeholder: '65' },
+                    { key: 'nps', label: 'Would Recommend (%)', type: 'number', placeholder: '75' },
+                    { key: 'willingToPay', label: 'Willing to Pay (%)', type: 'number', placeholder: '50' }
                 ];
-            } else if (dayId === 'day21' || dayId === 'day49-55') {
+            } else if (dayId === 'day21') {
+                headerText = 'Week 4 Results - Launch Metrics';
                 fields = [
-                    { key: 'totalSignups', label: 'Total Signups', type: 'number' },
-                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number' },
-                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number' },
-                    { key: 'mrr', label: 'MRR ($)', type: 'number' }
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '150' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '60' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '8' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '40' }
+                ];
+            } else if (dayId === 'day49-55') {
+                headerText = 'Week 8 Results - Strategic Decision';
+                fields = [
+                    { key: 'totalSignups', label: 'Total Signups', type: 'number', placeholder: '800' },
+                    { key: 'weeklyActive', label: 'Weekly Active Users', type: 'number', placeholder: '300' },
+                    { key: 'payingCustomers', label: 'Paying Customers', type: 'number', placeholder: '50' },
+                    { key: 'mrr', label: 'MRR ($)', type: 'number', placeholder: '400' }
                 ];
             }
 
             return `
-                <h4>📊 Key Metrics:</h4>
                 <div class="metrics-input">
+                    <div class="metrics-header">
+                        <span>⚡</span>
+                        <span>${headerText}</span>
+                    </div>
                     ${fields.map(field => `
                         <div class="metric-field">
                             <label>${field.label}:</label>
                             <input
                                 type="${field.type}"
                                 value="${metrics[field.key] || ''}"
-                                onblur="saveMetric('${dayId}', '${field.key}', this.value)"
+                                placeholder="${field.placeholder || ''}"
+                                oninput="handleMetricInput('${dayId}', '${field.key}', this)"
                             />
                         </div>
                     `).join('')}
@@ -1068,22 +1321,8 @@
             `;
         }
 
-        // Toggle task completion
-        function toggleTask(taskId) {
-            state.tasks[taskId] = !state.tasks[taskId];
-            saveState();
-            renderStats();
-            renderSprint();
-        }
-
-        // Save notes
-        function saveNotes(dayId, value) {
-            state.notes[dayId] = value;
-            saveState();
-        }
-
-        // Save metric
-        function saveMetric(dayId, key, value) {
+        // Handle metric input with debounced save
+        const debouncedSaveMetric = debounce((dayId, key, value) => {
             if (!state.metrics[dayId]) state.metrics[dayId] = {};
             state.metrics[dayId][key] = value;
 
@@ -1097,7 +1336,110 @@
 
             saveState();
             renderStats();
+        }, 800);
+
+        function handleMetricInput(dayId, key, input) {
+            debouncedSaveMetric(dayId, key, input.value);
         }
+
+        // Toggle task completion
+        function toggleTask(taskId) {
+            state.tasks[taskId] = !state.tasks[taskId];
+
+            // Set start date on first task completion
+            if (!state.startDate && state.tasks[taskId]) {
+                state.startDate = new Date().toISOString();
+            }
+
+            saveState();
+            renderStats();
+            renderSprint();
+        }
+
+        // Debounce function for auto-save
+        let saveTimers = {};
+
+        function debounce(func, wait) {
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(saveTimers[args[0]]);
+                    func(...args);
+                };
+                clearTimeout(saveTimers[args[0]]);
+                saveTimers[args[0]] = setTimeout(later, wait);
+            };
+        }
+
+        // Handle note input with debounced auto-save
+        const debouncedSaveNotes = debounce((dayId, noteType, value) => {
+            if (!state.notes[dayId]) {
+                state.notes[dayId] = {};
+            }
+            state.notes[dayId][noteType] = value;
+            state.notes[dayId].lastUpdated = new Date().toISOString();
+
+            saveState();
+            showSaveIndicator(dayId, 'saved');
+        }, 1000);
+
+        function handleNoteInput(dayId, noteType, textarea) {
+            // Update character count
+            const count = textarea.value.length;
+            const countEl = document.getElementById(`${dayId}-${noteType}-count`);
+            if (countEl) {
+                countEl.textContent = `${count} characters`;
+            }
+
+            // Show saving indicator
+            showSaveIndicator(dayId, 'saving');
+
+            // Debounced save
+            debouncedSaveNotes(dayId, noteType, textarea.value);
+        }
+
+        // Show save indicator
+        function showSaveIndicator(dayId, status) {
+            const indicator = document.getElementById(`${dayId}-save-indicator`);
+            if (!indicator) return;
+
+            indicator.classList.remove('saving', 'saved');
+            indicator.classList.add(status, 'show');
+
+            if (status === 'saving') {
+                indicator.querySelector('.indicator-icon').textContent = '⏳';
+                indicator.querySelector('.indicator-text').textContent = 'Saving...';
+            } else {
+                indicator.querySelector('.indicator-icon').textContent = '✅';
+                indicator.querySelector('.indicator-text').textContent = 'Saved';
+
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        // Switch note tab
+        function switchNoteTab(dayId, noteType) {
+            // Update tab active states
+            const dayEl = document.getElementById(`${dayId}-tasks`).closest('.day-card');
+            if (!dayEl) return;
+
+            const tabs = dayEl.querySelectorAll('.note-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show corresponding content
+            const contents = dayEl.querySelectorAll('.note-type-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const targetContent = document.getElementById(`${dayId}-${noteType}-content`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        }
+
+        // Note: saveMetric replaced by handleMetricInput + debouncedSaveMetric above
 
         // Toggle week visibility
         function toggleWeek(weekId) {

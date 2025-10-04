@@ -665,6 +665,7 @@
         <div class="progress-overview" id="statsCards"></div>
 
         <div class="controls">
+            <button onclick="openMetricsModal()" class="success">📊 Update Current Metrics</button>
             <button onclick="exportProgress()">💾 Export Progress</button>
             <button onclick="importProgress()" class="secondary">📥 Import Progress</button>
             <button onclick="resetProgress()" class="danger">🔄 Reset All</button>
@@ -672,6 +673,41 @@
         </div>
 
         <div id="sprintContent"></div>
+    </div>
+
+    <!-- Quick Metrics Update Modal -->
+    <div id="metricsModal" class="modal">
+        <div class="modal-content">
+            <h2>📊 Update Current Metrics</h2>
+            <p>Update your portfolio metrics (shown in top cards):</p>
+            <div style="margin-top: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div class="metric-field">
+                        <label>Total Signups (All Projects):</label>
+                        <input type="number" id="quick-signups" placeholder="e.g., 150">
+                    </div>
+                    <div class="metric-field">
+                        <label>Weekly Active Users:</label>
+                        <input type="number" id="quick-active" placeholder="e.g., 60">
+                    </div>
+                    <div class="metric-field">
+                        <label>Paying Customers:</label>
+                        <input type="number" id="quick-customers" placeholder="e.g., 8">
+                    </div>
+                    <div class="metric-field">
+                        <label>Monthly Recurring Revenue ($):</label>
+                        <input type="number" id="quick-mrr" placeholder="e.g., 40">
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 12px; background: #fef3c7; border-radius: 6px; font-size: 0.9em; color: #92400e;">
+                    <strong>💡 Tip:</strong> Update these anytime your metrics change. These show in the top overview cards. Decision gate days (Day 21, Day 49-55) also capture historical snapshots for comparison.
+                </div>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button onclick="saveQuickMetrics()" class="success">💾 Save Metrics</button>
+                <button onclick="closeModal()" class="secondary">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- Export/Import Modal -->
@@ -1882,8 +1918,49 @@
             alert('✅ Copied to clipboard!');
         }
 
+        // Open metrics modal
+        function openMetricsModal() {
+            // Pre-fill with current values
+            const currentMetrics = state.metrics || {};
+            document.getElementById('quick-signups').value = currentMetrics.totalSignups || '';
+            document.getElementById('quick-active').value = currentMetrics.weeklyActive || '';
+            document.getElementById('quick-customers').value = currentMetrics.payingCustomers || '';
+            document.getElementById('quick-mrr').value = currentMetrics.mrr || '';
+
+            document.getElementById('metricsModal').classList.add('show');
+        }
+
+        // Save quick metrics
+        function saveQuickMetrics() {
+            const signups = document.getElementById('quick-signups').value;
+            const active = document.getElementById('quick-active').value;
+            const customers = document.getElementById('quick-customers').value;
+            const mrr = document.getElementById('quick-mrr').value;
+
+            // Update global metrics
+            if (signups) state.metrics.totalSignups = parseInt(signups);
+            if (active) state.metrics.weeklyActive = parseInt(active);
+            if (customers) state.metrics.payingCustomers = parseInt(customers);
+            if (mrr) state.metrics.mrr = parseInt(mrr);
+
+            state.metrics.lastQuickUpdate = new Date().toISOString();
+
+            saveState();
+            renderStats();
+            closeModal();
+
+            // Show success feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Saved!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1500);
+        }
+
         // Close modal
         function closeModal() {
+            document.getElementById('metricsModal').classList.remove('show');
             document.getElementById('exportModal').classList.remove('show');
             document.getElementById('importModal').classList.remove('show');
         }
@@ -1927,6 +2004,40 @@
         // Close modals on background click
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal')) {
+                closeModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + S = Save current state
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveState();
+
+                // Show visual feedback
+                const header = document.querySelector('header');
+                const originalBg = header.style.background;
+                header.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+
+                const p = header.querySelector('p');
+                const originalText = p.textContent;
+                p.textContent = '✅ Progress Saved!';
+
+                setTimeout(() => {
+                    header.style.background = originalBg;
+                    p.textContent = originalText;
+                }, 1500);
+            }
+
+            // Ctrl/Cmd + M = Open metrics modal
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                openMetricsModal();
+            }
+
+            // Escape = Close modal
+            if (e.key === 'Escape') {
                 closeModal();
             }
         });

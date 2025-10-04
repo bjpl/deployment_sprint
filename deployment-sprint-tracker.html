@@ -1106,12 +1106,39 @@
                     });
                 }
 
-                state = loadedState;
+                // Ensure taskNotes exists (for backwards compatibility)
+                if (!loadedState.taskNotes) {
+                    loadedState.taskNotes = {};
+                }
+
+                // Ensure all required state properties exist
+                state = {
+                    tasks: loadedState.tasks || {},
+                    notes: loadedState.notes || {},
+                    taskNotes: loadedState.taskNotes || {},
+                    metrics: loadedState.metrics || {},
+                    currentDay: loadedState.currentDay || 1,
+                    startDate: loadedState.startDate || null,
+                    projectFocus: loadedState.projectFocus || [],
+                    version: '1.2'
+                };
 
                 // Set start date if not set
                 if (!state.startDate && Object.keys(state.tasks).length > 0) {
                     state.startDate = new Date().toISOString();
                 }
+            } else {
+                // First time loading - initialize with defaults
+                state = {
+                    tasks: {},
+                    notes: {},
+                    taskNotes: {},
+                    metrics: {},
+                    currentDay: 1,
+                    startDate: null,
+                    projectFocus: [],
+                    version: '1.2'
+                };
             }
         }
 
@@ -1264,8 +1291,8 @@
         function renderTasks(tasks, dayId) {
             return tasks.map(task => {
                 const isCompleted = state.tasks[task.id] || false;
-                const hasNote = state.taskNotes[task.id] && state.taskNotes[task.id].note;
-                const taskNote = state.taskNotes[task.id]?.note || '';
+                const hasNote = state.taskNotes && state.taskNotes[task.id] && state.taskNotes[task.id].note;
+                const taskNote = (state.taskNotes && state.taskNotes[task.id]?.note) || '';
                 const priorityBadge = `<span class="badge ${task.priority}">${task.priority}</span>`;
 
                 return `

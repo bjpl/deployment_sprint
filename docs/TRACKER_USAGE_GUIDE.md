@@ -48,6 +48,7 @@ python -m http.server 8080
 ### **3. Enhanced Daily Journaling**
 - 📋 5 note categories per day (Summary, Wins, Blockers, Decisions, Tomorrow)
 - ⏱️ Auto-save as you type (1 second debounce)
+- 💾 Manual "Save Now" button (immediate save)
 - ✅ Visual save indicator (Saving... → Saved)
 - 🔢 Character count for each note type
 - 🗂️ Organized tabs for easy navigation
@@ -59,11 +60,12 @@ python -m http.server 8080
 - 🎯 Visualize progress toward goals
 
 ### **5. Data Persistence**
-- 💾 Auto-saves as you type (notes: 1s delay, tasks: immediate)
-- 🔄 Resume where you left off
+- ⚡ Auto-save as you type (1s debounce, smart and efficient)
+- 💾 Manual save buttons (click for immediate save)
+- 🔄 Resume where you left off (localStorage)
 - 📥 Export progress as JSON (backup)
 - 📤 Import previously saved progress
-- ⏰ Background save every 30 seconds
+- ⏰ Background save every 30 seconds (safety net)
 
 ### **6. Smart Organization**
 - 📅 Organized by week → day → task → notes
@@ -430,6 +432,18 @@ Notes for next time:
 - "➕ Add Note" = No note yet (grey button)
 - "📝 View Note" = Note exists (blue button)
 - Click to expand, type, auto-saves, click to close
+
+**Saving behavior:**
+- Auto-save: 1 second after you stop typing (automatic)
+- Manual save: Click "💾 Save" button (immediate)
+- Button feedback: "💾 Save" → "✅ Saved!" for 1.5 seconds
+- Both work together (use whichever you prefer)
+
+**Pro tip for task notes:**
+- Add notes WHILE working (not after)
+- Save commands you run (copy/paste later)
+- Document errors + solutions (learning)
+- Record actual time vs estimate (improve planning)
 
 ### **Tip 4: Adjust the Plan**
 

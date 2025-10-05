@@ -292,6 +292,87 @@
             border-color: var(--primary);
         }
 
+        .task-guide-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            font-size: 0.8em;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .task-guide-btn:hover {
+            background: #f0f9ff;
+            color: #0369a1;
+            border-color: #0369a1;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .task-guide-area {
+            margin-top: 12px;
+            padding: 16px;
+            background: #f0f9ff;
+            border-radius: 6px;
+            border-left: 4px solid #0369a1;
+            display: none;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .task-guide-area.show {
+            display: block;
+        }
+
+        .task-guide-area h4 {
+            margin: 0 0 12px 0;
+            color: #0369a1;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-guide-area pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+
+        .task-guide-area code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .task-guide-area ul, .task-guide-area ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .task-guide-area li {
+            margin: 4px 0;
+        }
+
+        .task-guide-area .checkpoint {
+            background: #dcfce7;
+            border-left: 3px solid #10b981;
+            padding: 8px 12px;
+            margin: 12px 0;
+            border-radius: 4px;
+            color: #065f46;
+            font-weight: 500;
+        }
+
         .task-note-area {
             margin-top: 12px;
             padding: 12px;
@@ -736,6 +817,644 @@
     </div>
 
     <script>
+        // Task guides with detailed instructions from roadmap
+        const taskGuides = {
+            'd1t1': `<h4>📖 Account Creation Marathon</h4>
+                <p>Open all tabs simultaneously and sign up in parallel:</p>
+                <ul>
+                    <li><strong>Tab 1:</strong> <a href="https://vercel.com/signup" target="_blank">Vercel</a> - Frontend hosting</li>
+                    <li><strong>Tab 2:</strong> <a href="https://railway.app" target="_blank">Railway</a> - Backend hosting</li>
+                    <li><strong>Tab 3:</strong> <a href="https://supabase.com" target="_blank">Supabase</a> - Database + Auth</li>
+                    <li><strong>Tab 4:</strong> <a href="https://github.com" target="_blank">GitHub</a> - Verify account</li>
+                    <li><strong>Tab 5:</strong> <a href="https://platform.openai.com/signup" target="_blank">OpenAI</a> - AI API</li>
+                    <li><strong>Tab 6:</strong> <a href="https://unsplash.com/developers" target="_blank">Unsplash</a> - Image API</li>
+                </ul>
+                <p><strong>Tips:</strong></p>
+                <ul>
+                    <li>Use password manager, same email for all</li>
+                    <li>Enable 2FA on each platform</li>
+                    <li>Store credentials securely</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: 6 platform accounts created</div>`,
+
+            'd1t2': `<h4>📖 API Keys Harvest</h4>
+                <p>Collect ALL API keys and store them securely:</p>
+                <ol>
+                    <li><strong>OpenAI API key</strong> (Settings → API Keys)
+                        <ul><li>Set spending limit: $10/month</li><li>Save: OPENAI_API_KEY=sk-proj-xxx</li></ul>
+                    </li>
+                    <li><strong>Unsplash Access Key</strong> (Your Apps → New Application)
+                        <ul><li>Save: UNSPLASH_ACCESS_KEY=xxx</li></ul>
+                    </li>
+                    <li><strong>Alpha Vantage</strong> (free tier)
+                        <ul><li>Visit: <a href="https://www.alphavantage.co/support/#api-key" target="_blank">alphavantage.co</a></li><li>Save: ALPHA_VANTAGE_API_KEY=xxx</li></ul>
+                    </li>
+                    <li><strong>NewsAPI</strong> (free tier)
+                        <ul><li>Visit: <a href="https://newsapi.org/register" target="_blank">newsapi.org</a></li><li>Save: NEWSAPI_KEY=xxx</li></ul>
+                    </li>
+                    <li><strong>Create 3 Supabase projects:</strong>
+                        <ul>
+                            <li>describe-it-prod</li>
+                            <li>subjunctive-practice-prod</li>
+                            <li>open-learn-prod</li>
+                            <li>Save each: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>Create master .env template file:</p>
+                <pre>nano ~/deployment_keys_master.env</pre>
+                <div class="checkpoint">✅ Checkpoint: All API keys secured in password manager</div>`,
+
+            'd1t3': `<h4>📖 Generate Security Keys</h4>
+                <p>Tell Claude Code:</p>
+                <pre>"Generate all security keys for all 6 projects at once.
+For each project, generate:
+- JWT_SECRET (64 chars hex)
+- API_SECRET_KEY (64 chars hex)
+- SESSION_SECRET (32 chars hex)
+
+Output as a master template file I can copy to each project."</pre>
+                <p>Then:</p>
+                <ul>
+                    <li>Review generated keys</li>
+                    <li>Store in password manager</li>
+                    <li>Create per-project .env files</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: Security keys for all 6 projects generated</div>`,
+
+            'd1t4': `<h4>📖 Deploy describe_it</h4>
+                <pre>cd ../describe_it</pre>
+                <p>Tell Claude Code:</p>
+                <pre>"Deploy describe_it to Vercel + Supabase for personal use.
+Steps:
+1. Create .env.local with these keys: [paste from master]
+2. Run database migrations in Supabase
+3. Deploy to Vercel with vercel --prod
+4. Configure all environment variables
+5. Test health endpoint
+6. Test full user flow: search → describe → save vocab
+
+Walk me through each step with exact commands."</pre>
+                <p>Execute Claude's commands, then test:</p>
+                <pre>https://describe-it-xxx.vercel.app</pre>
+                <div class="checkpoint">✅ Checkpoint: describe_it LIVE and tested</div>`,
+
+            'd1t5': `<h4>📖 Deploy subjunctive_practice</h4>
+                <pre>cd ../subjunctive_practice</pre>
+                <p>Tell Claude Code:</p>
+                <pre>"Deploy subjunctive_practice backend to Railway and frontend to Vercel.
+Steps:
+1. Create Railway project with PostgreSQL
+2. Configure backend environment variables
+3. Deploy backend (FastAPI)
+4. Create Vercel project for frontend
+5. Configure frontend environment variables
+6. Deploy frontend (Next.js)
+7. Update CORS settings
+8. Test registration → login → practice flow
+
+Provide exact railway and vercel commands."</pre>
+                <p>Execute deployment, then test end-to-end user journey</p>
+                <div class="checkpoint">✅ Checkpoint: subjunctive_practice LIVE with full backend</div>`,
+
+            'd1t6': `<h4>📖 Validation & Monitoring Setup</h4>
+                <p>Test both deployed apps:</p>
+                <ol>
+                    <li><strong>describe_it:</strong> Search "sunset", generate description, save 3 words</li>
+                    <li><strong>subjunctive:</strong> Register, complete 5 exercises, check progress</li>
+                </ol>
+                <p>Document what worked and what broke:</p>
+                <pre>nano ~/deployment_log_day1.md</pre>
+                <p>Create monitoring script - Tell Claude Code:</p>
+                <pre>"Create a simple bash script that checks health endpoints for:
+- describe_it: https://describe-it-xxx.vercel.app/api/health
+- subjunctive_practice: https://subjunctive-xxx.railway.app/health
+
+Output status for each."</pre>
+                <p>Save as: <code>check-health.sh</code></p>
+                <div class="checkpoint">✅ Checkpoint: 2 apps live, health monitoring setup</div>`,
+
+            'd2t1': `<h4>📖 Fix aves TypeScript Build</h4>
+                <pre>cd ../aves</pre>
+                <p>Tell Claude Code:</p>
+                <pre>"Fix TypeScript build errors in aves.
+Update tsconfig.json to exclude test files from production build.
+Test that npm run build completes successfully."</pre>
+                <div class="checkpoint">✅ Checkpoint: Build completes without errors</div>`,
+
+            'd2t2': `<h4>📖 Generate 50 Exercises for aves</h4>
+                <p>Tell Claude Code:</p>
+                <pre>"Generate 50 static exercises in data/exercises.json using:
+- Existing 10 species from data/species.json
+- Existing 10 annotations from data/annotations.json
+
+Exercise distribution:
+- 15 Visual Discrimination (identify bird by Spanish name from image)
+- 15 Contextual Fill (complete Spanish sentences)
+- 10 Translation Practice (Spanish ↔ English bird names)
+- 10 Vocabulary Matching (match terms to definitions)
+
+Progressive difficulty:
+- Level 1 (Easy): 20 exercises
+- Level 2 (Medium): 20 exercises
+- Level 3 (Hard): 10 exercises
+
+Show me a preview of 5 sample exercises first for approval."</pre>
+                <ul>
+                    <li>Review samples and approve</li>
+                    <li>Claude generates all 50 exercises</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: 50 exercises generated and validated</div>`,
+
+            'd2t3': `<h4>📖 Deploy aves to GitHub Pages</h4>
+                <pre>npm run build
+git add .
+git commit -m "Add 50 exercises, fix build for deployment"
+git push origin main
+npm run deploy  # Deploys to GitHub Pages</pre>
+                <p>Wait 2-5 minutes for GitHub Pages deployment</p>
+                <p>Test: <code>https://[username].github.io/aves/</code></p>
+                <div class="checkpoint">✅ Checkpoint: aves LIVE on GitHub Pages</div>`,
+
+            'd2t4': `<h4>📖 Test All 3 Apps Comprehensively</h4>
+                <p><strong>1. describe_it:</strong></p>
+                <ul>
+                    <li>Search 3 different images</li>
+                    <li>Generate descriptions</li>
+                    <li>Save 10 vocabulary words</li>
+                    <li>Test on mobile (PWA)</li>
+                </ul>
+                <p><strong>2. subjunctive_practice:</strong></p>
+                <ul>
+                    <li>Complete 10 exercises</li>
+                    <li>Check progress stats</li>
+                    <li>Test on mobile</li>
+                </ul>
+                <p><strong>3. aves:</strong></p>
+                <ul>
+                    <li>Browse all 10 species</li>
+                    <li>Complete 10 exercises</li>
+                    <li>Check progress saves</li>
+                    <li>Test on mobile</li>
+                </ul>
+                <p>Log any bugs found and prioritize: Critical (blocks usage) vs Nice-to-have</p>
+                <div class="checkpoint">✅ Checkpoint: All 3 apps validated for personal use</div>`,
+
+            'd2t5': `<h4>📖 Deploy open_learn Infrastructure</h4>
+                <pre>cd ../open_learn</pre>
+                <p><strong>Phase 1: Railway Setup (1 hour)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Set up open_learn on Railway:
+1. Create new Railway project
+2. Add PostgreSQL database
+3. Add Redis cache
+4. Generate railway.json configuration
+5. Show me the environment variables I need to set"</pre>
+                <pre>railway login
+railway init
+railway add --database postgresql
+railway add --database redis</pre>
+                <p>Configure environment variables in Railway dashboard (copy from master .env template)</p>
+                <p><strong>Phase 2: Deploy Backend (1.5 hours)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Deploy open_learn backend to Railway:
+1. Update docker-compose for production
+2. Configure backend/Dockerfile
+3. Set up database migrations
+4. Deploy backend
+5. Run migrations
+6. Test health endpoint"</pre>
+                <pre>railway up</pre>
+                <p><strong>Phase 3: Test Scrapers (1 hour)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Test the 3 main scrapers for open_learn:
+1. El Tiempo
+2. El Espectador
+3. Semana
+
+Run test scrape for each, verify data quality."</pre>
+                <p>Test each scraper:</p>
+                <pre>curl -X POST https://open-learn.railway.app/api/v1/scraping/scrape \\
+  -d '{"source":"el_tiempo","count":3}'</pre>
+                <p><strong>Phase 4: Frontend Deploy (30 min)</strong></p>
+                <pre>cd frontend
+vercel --prod
+# Set NEXT_PUBLIC_API_URL to Railway backend URL</pre>
+                <div class="checkpoint">✅ Checkpoint: open_learn backend LIVE, frontend LIVE, scrapers tested</div>`,
+
+            'd3t1': `<h4>📖 Deploy corporate_intel Locally</h4>
+                <pre>cd ../corporate_intel</pre>
+                <p><strong>Phase 1: Environment Setup (30 min)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Create .env file for corporate_intel with:
+- Database credentials (PostgreSQL, Redis, MinIO)
+- API keys (Alpha Vantage, NewsAPI, SEC user agent)
+- Security keys
+Generate secure random passwords for all database components."</pre>
+                <p><strong>Phase 2: Docker Deployment (1 hour)</strong></p>
+                <pre>docker-compose up -d
+# Wait for services (2 min)
+docker-compose ps</pre>
+                <p><strong>Phase 3: Initialize Database (30 min)</strong></p>
+                <pre>docker exec corporate-intel-api alembic upgrade head
+# Verify tables created
+docker exec -it corporate-intel-postgres psql -U intel_user -d corporate_intel -c "\\dt"</pre>
+                <div class="checkpoint">✅ Checkpoint: corporate_intel running locally</div>`,
+
+            'd3t2': `<h4>📖 Import EdTech Companies Data</h4>
+                <p><strong>Phase 1: Create User (15 min)</strong></p>
+                <pre>curl -X POST http://localhost:8000/auth/register \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"your@email.com","password":"SecurePass123!","full_name":"Your Name"}'
+
+# Get auth token
+curl -X POST http://localhost:8000/auth/login \\
+  -d 'username=your@email.com&password=SecurePass123!'
+
+# Save token
+export TOKEN="[paste token here]"</pre>
+                <p><strong>Phase 2: Import EdTech Companies (45 min)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Create a script to bulk import these EdTech companies:
+- DUOL (Duolingo)
+- CHGG (Chegg)
+- COUR (Coursera)
+- TWOU (2U Inc)
+- ATGE (Adtalem Global)
+- LRFC (Learning Corp)
+- APEI (American Public Education)
+
+For each, use the /api/v1/companies endpoint."</pre>
+                <pre>python scripts/import_edtech_companies.py</pre>
+                <p><strong>Phase 3: Fetch SEC Filings (1 hour)</strong></p>
+                <p>Tell Claude Code:</p>
+                <pre>"Trigger SEC filing ingestion for DUOL.
+Fetch last 4 filings (10-K, 10-Q).
+Monitor progress in logs."</pre>
+                <pre># Watch logs
+docker-compose logs -f api</pre>
+                <div class="checkpoint">✅ Checkpoint: corporate_intel working, data importing</div>`,
+
+            'd3t3': `<h4>📖 Create Deployment Automation Scripts</h4>
+                <pre>cd ~/deployment_sprint</pre>
+                <p>Tell Claude Code:</p>
+                <pre>"Create these automation scripts for managing all 6 projects:
+
+1. deploy-all.sh
+   - Deploy/redeploy all projects with one command
+   - For each project, run appropriate deploy command
+   - Show progress and success/failure
+
+2. health-check-all.sh
+   - Check health endpoints for all 5 deployed projects
+   - Output table with status codes
+   - Alert if any are down
+
+3. backup-all.sh
+   - Backup databases from Railway projects
+   - Backup Supabase projects
+   - Create local dump of corporate_intel DB
+   - Timestamp and organize backups
+
+4. update-all.sh
+   - Pull latest code for all projects
+   - Run tests
+   - Deploy if tests pass
+   - Rollback if deployment fails
+
+Save all to ~/deployment_sprint/automation/"</pre>
+                <ul>
+                    <li>Review generated scripts</li>
+                    <li>Test each one</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: Automation scripts ready</div>`,
+
+            'd3t4': `<h4>📖 Create Unified Monitoring Dashboard</h4>
+                <p>Tell Claude Code:</p>
+                <pre>"Create a Streamlit dashboard: ~/deployment_sprint/dashboards/all-projects.py
+
+Display:
+1. Project Health Grid
+   - For each project: Name, Status (🟢/🔴), Uptime %, Last Deploy
+   - Refresh every 5 minutes
+
+2. Quick Actions
+   - Buttons to deploy each project
+   - Button to run health checks
+   - Button to view logs
+
+3. Cost Tracker
+   - Show estimated monthly costs
+   - Link to each platform's billing page
+
+4. Deployment Log
+   - Last 10 deployments across all projects
+   - Show timestamp, project, status, duration
+
+Use the health-check-all.sh script for data.
+Make it look clean and professional."</pre>
+                <p>Test dashboard:</p>
+                <pre>streamlit run dashboards/all-projects.py</pre>
+                <div class="checkpoint">✅ Checkpoint: Central command center for all projects</div>`,
+
+            'd4t1': `<h4>📖 Test describe_it Workflow</h4>
+                <p><strong>Task:</strong> Learn 15 Spanish vocabulary words related to "technology"</p>
+                <ol>
+                    <li>Search 5 tech-related images</li>
+                    <li>Generate descriptions for each</li>
+                    <li>Save 15 vocabulary words</li>
+                    <li>Review flashcard feature</li>
+                    <li>Export vocab list</li>
+                </ol>
+                <p><strong>Metrics to track:</strong></p>
+                <ul>
+                    <li>Time to complete task: ___ min</li>
+                    <li>Descriptions quality: 1-5 ___</li>
+                    <li>Vocab saved successfully: Y/N</li>
+                    <li>Would use again tomorrow: Y/N</li>
+                </ul>
+                <p>Log results:</p>
+                <pre>echo "Day 4 describe_it: [results]" >> validation_log.md</pre>
+                <div class="checkpoint">✅ Day 4 Checkpoint: describe_it thoroughly validated</div>`,
+
+            'd4t2': `<h4>📖 Test subjunctive_practice Workflow</h4>
+                <p><strong>Task:</strong> Complete 20 exercises, review progress</p>
+                <ol>
+                    <li>Complete 20 subjunctive exercises</li>
+                    <li>Mix of different tense types</li>
+                    <li>Check accuracy percentage</li>
+                    <li>Review progress dashboard</li>
+                    <li>Test on mobile</li>
+                </ol>
+                <p><strong>Metrics:</strong></p>
+                <ul>
+                    <li>Exercises completed: 20</li>
+                    <li>Accuracy: ___%</li>
+                    <li>Time spent: ___ min</li>
+                    <li>Mobile experience: 1-5 ___</li>
+                    <li>Would use daily: Y/N</li>
+                </ul>
+                <p>Log results:</p>
+                <pre>echo "Day 4 subjunctive: [results]" >> validation_log.md</pre>
+                <div class="checkpoint">✅ Day 4 Checkpoint: 2 apps tested thoroughly</div>`,
+
+            'd5t1': `<h4>📖 Test aves Workflow</h4>
+                <p><strong>Task:</strong> Learn 10 bird names in Spanish</p>
+                <ol>
+                    <li>Browse all 10 species</li>
+                    <li>Complete 10 exercises (mixed types)</li>
+                    <li>Check which birds you remember</li>
+                    <li>Test on mobile/tablet</li>
+                    <li>Note UX friction points</li>
+                </ol>
+                <p><strong>Metrics:</strong></p>
+                <ul>
+                    <li>Birds learned: ___/10</li>
+                    <li>Exercises completed: 10</li>
+                    <li>Exercise variety good: Y/N</li>
+                    <li>Would continue tomorrow: Y/N</li>
+                </ul>
+                <p>Log results:</p>
+                <pre>echo "Day 5 aves: [results]" >> validation_log.md</pre>
+                <div class="checkpoint">✅ Day 5: aves validated</div>`,
+
+            'd5t2': `<h4>📖 Test open_learn Workflow</h4>
+                <p><strong>Task:</strong> Research recent Colombian economic news</p>
+                <ol>
+                    <li>Trigger scrape for El Tiempo (10 articles)</li>
+                    <li>Search articles for "economía" or "inflación"</li>
+                    <li>Export results to PDF</li>
+                    <li>Check data quality</li>
+                    <li>Test search functionality</li>
+                </ol>
+                <p><strong>Metrics:</strong></p>
+                <ul>
+                    <li>Articles scraped: ___</li>
+                    <li>Search relevance: 1-5 ___</li>
+                    <li>Data quality: 1-5 ___</li>
+                    <li>Useful for research: Y/N</li>
+                </ul>
+                <p>Log results:</p>
+                <pre>echo "Day 5 open_learn: [results]" >> validation_log.md</pre>
+                <div class="checkpoint">✅ Day 5 Checkpoint: 4 apps thoroughly tested</div>`,
+
+            'd6t1': `<h4>📖 Review Validation Logs</h4>
+                <pre>cat validation_log.md</pre>
+                <p><strong>Categorize issues:</strong></p>
+                <p><strong>Critical Bugs</strong> (blocks usage):</p>
+                <ul><li>[List issues that prevent basic functionality]</li></ul>
+                <p><strong>Important UX Issues:</strong></p>
+                <ul><li>[List friction points that hurt experience]</li></ul>
+                <p><strong>Nice-to-haves:</strong></p>
+                <ul><li>[List enhancements for later]</li></ul>
+                <div class="checkpoint">✅ Checkpoint: All bugs categorized</div>`,
+
+            'd6t2': `<h4>📖 Fix All Critical Bugs</h4>
+                <p>For each critical bug:</p>
+                <p>Tell Claude Code:</p>
+                <pre>"Bug: [description]
+App: [project name]
+Expected: [what should happen]
+Actual: [what happens]
+Please fix and deploy."</pre>
+                <p>After each fix:</p>
+                <ul>
+                    <li>Test the fix locally</li>
+                    <li>Deploy to production</li>
+                    <li>Test in production</li>
+                    <li>Mark as resolved</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: All critical bugs fixed and deployed</div>`,
+
+            'd7t1': `<h4>📖 Usage Analysis</h4>
+                <p>Review which apps you opened each day</p>
+                <p><strong>Usage Tracking Table:</strong></p>
+                <pre>┌─────────────────┬───┬───┬───┬───┬───┬───┬───┬───────┐
+│ App             │ M │ T │ W │ T │ F │ S │ S │ Total │
+├─────────────────┼───┼───┼───┼───┼───┼───┼───┼───────┤
+│ describe_it     │ ✓ │ ✓ │ ✓ │ ✓ │ ✓ │ ✓ │ ✓ │ 7/7   │
+│ subjunctive     │   │ ✓ │ ✓ │ ✓ │ ✓ │ ✓ │   │ 5/7   │
+│ aves            │   │   │   │ ✓ │ ✓ │ ✓ │   │ 3/7   │
+│ open_learn      │   │   │   │   │ ✓ │ ✓ │   │ 2/7   │
+│ corporate_intel │   │   │   │   │   │   │   │ 0/7   │
+└─────────────────┴───┴───┴───┴───┴───┴───┴───┴───────┘</pre>
+                <p><strong>Priority Classification:</strong></p>
+                <ul>
+                    <li><strong>5-7 uses = HIGH</strong> (keep, improve, beta test)</li>
+                    <li><strong>2-4 uses = MEDIUM</strong> (optimize, then decide)</li>
+                    <li><strong>0-1 uses = LOW</strong> (defer or kill)</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: Clear data-driven priorities established</div>`,
+
+            'd7t2': `<h4>📖 Prioritize Projects</h4>
+                <p><strong>DECISION GATE 1: Which projects to focus on?</strong></p>
+                <p>Based on usage data, decide:</p>
+                <p><strong>HIGH Priority</strong> (Focus Weeks 2-4):</p>
+                <ul>
+                    <li>□ describe_it (7/7 uses) → Beta test Week 3</li>
+                    <li>□ subjunctive_practice (5/7 uses) → Beta test Week 3</li>
+                    <li>□ [Third project if any reached 5+ uses]</li>
+                </ul>
+                <p><strong>MEDIUM Priority</strong> (Revisit Month 2):</p>
+                <ul>
+                    <li>□ [Projects with 2-4 uses]</li>
+                    <li>□ Improve UX first</li>
+                    <li>□ Retest Week 5</li>
+                </ul>
+                <p><strong>LOW Priority</strong> (Defer or Archive):</p>
+                <ul>
+                    <li>□ [Projects with 0-1 uses]</li>
+                    <li>□ Archive for now</li>
+                    <li>□ Revisit in Month 3 if top projects successful</li>
+                </ul>
+                <p>Document decisions:</p>
+                <pre>nano week1_decisions.md</pre>
+                <div class="checkpoint">✅ Checkpoint: Strategic decisions documented</div>`,
+
+            'd7t3': `<h4>📖 Plan Week 2</h4>
+                <p><strong>HIGH Priority Projects Need:</strong></p>
+                <ol>
+                    <li>Bug fixes from validation</li>
+                    <li>UX improvements</li>
+                    <li>Beta user recruitment prep</li>
+                    <li>Feedback forms creation</li>
+                    <li>Monitoring & analytics setup</li>
+                </ol>
+                <p>Generate Week 2 task list - Tell Claude Code:</p>
+                <pre>"Based on these HIGH priority projects: [list]
+Create a detailed Week 2 task breakdown with:
+- Daily focus areas
+- Feature improvements needed
+- Beta testing preparation
+- Time estimates per task"</pre>
+                <ul>
+                    <li>Review plan</li>
+                    <li>Adjust based on your availability</li>
+                </ul>
+                <div class="checkpoint">✅ Checkpoint: Week 1 complete, clear priorities set</div>`,
+
+            // WEEK 2 - Days 8-13
+            'd8t1': `<h4>📖 Improve describe_it UX</h4>
+    <p>Based on Week 1 usage feedback, implement critical UX improvements and bug fixes for describe_it.</p>
+    <pre>Tell Claude Code:
+"Based on my usage of describe_it, implement these improvements:
+
+Priority 1 (Must Fix):
+1. [Top frustration from validation]
+2. [Second issue]
+
+Priority 2 (Nice to Have):
+3. [Enhancement]
+4. [Quality improvement]
+
+For each:
+- Show me the current behavior
+- Propose the fix
+- Implement after I approve
+- Deploy to Vercel
+- I'll test immediately"
+
+# Deploy updates
+vercel --prod
+
+# Test improvements immediately</pre>
+    <ul>
+        <li>Focus on top friction points from Week 1 validation</li>
+        <li>Fix critical bugs that block usage</li>
+        <li>Improve most-used features</li>
+        <li>Deploy and test same day</li>
+    </ul>
+    <div class="checkpoint">✅ Checkpoint: describe_it UX improved and deployed</div>`,
+
+            'd8t2': `<h4>📖 Improve subjunctive_practice UX</h4>
+    <p>Apply same improvement pattern to subjunctive_practice based on personal usage insights.</p>
+    <pre>Tell Claude Code:
+"For subjunctive_practice, implement:
+1. [Critical fix 1]
+2. [Critical fix 2]
+3. [UX improvement]
+
+Test locally first, then deploy to Railway + Vercel."
+
+# Deploy updates
+railway up  # Backend
+vercel --prod  # Frontend
+
+# Test thoroughly</pre>
+    <ul>
+        <li>Fix critical bugs from Week 1</li>
+        <li>Improve exercise flow if needed</li>
+        <li>Enhance progress tracking</li>
+        <li>Test full user journey</li>
+    </ul>
+    <div class="checkpoint">✅ Checkpoint: subjunctive_practice optimized and tested</div>`,
+
+            'd8t3': `<h4>📖 Create Beta Testing Assets</h4>
+    <p>Prepare all materials needed for beta user recruitment and feedback collection.</p>
+    <pre>Tell Claude Code:
+"Create beta testing assets for describe_it and subjunctive_practice:
+
+1. Google Forms for feedback (2 forms):
+   Questions:
+   - How many days did you use it? (1-7)
+   - Did you find it helpful? (1-5 stars)
+   - What worked well? (text)
+   - What was frustrating? (text)
+   - Would you pay for premium features? (Y/N/Maybe)
+   - If yes, what price: $2.99, $4.99, $9.99/month?
+   - Additional comments
+
+   Export as markdown, I'll create in Google Forms
+
+2. Email templates (2 templates):
+   - Beta invitation email
+   - Weekly check-in email
+   - Thank you + feedback request email
+
+3. Onboarding guides (2 guides):
+   - Quick start guide for new users
+   - Feature walkthrough
+   - Troubleshooting FAQ
+
+Put all in ~/deployment_sprint/beta-materials/"</pre>
+    <ul>
+        <li>Create Google Forms for structured feedback</li>
+        <li>Write email templates for beta communication</li>
+        <li>Prepare onboarding guides</li>
+        <li>Save all materials in beta-materials folder</li>
+    </ul>
+    <div class="checkpoint">✅ Checkpoint: Beta testing assets ready to use</div>`,
+
+            'd8t4': `<h4>📖 Setup Analytics Tracking</h4>
+    <p>Add simple analytics to track user behavior without external services.</p>
+    <pre>Tell Claude Code:
+"Add simple analytics tracking to describe_it and subjunctive_practice:
+
+For describe_it:
+- Track: Searches performed, descriptions generated, vocab saved
+- Store in Supabase analytics table
+- Create simple dashboard page at /admin/stats (protected route)
+
+For subjunctive_practice:
+- Track: Exercises completed, accuracy rates, daily active users
+- Store in PostgreSQL analytics table
+- Create dashboard at /admin/stats
+
+Use existing auth for protection.
+No external services (Google Analytics), keep it simple."
+
+# Deploy analytics updates
+# Test dashboards
+# Verify data collection working</pre>
+    <ul>
+        <li>Create analytics tables in databases</li>
+        <li>Track key user actions</li>
+        <li>Build protected admin dashboards</li>
+        <li>Test data collection</li>
+    </ul>
+    <div class="checkpoint">✅ Checkpoint: Analytics tracking both apps</div>`
+        };
+
         // Sprint data structure
         const sprintData = {
             weeks: [
@@ -1398,10 +2117,12 @@
                             <div class="task-description">${task.description}</div>
                             <div class="task-actions">
                                 <span class="task-time">⏱️ ${task.time}</span>
+                                ${taskGuides[task.id] ? `<button class="task-guide-btn" onclick="toggleTaskGuide('${task.id}', event)">📖 View Guide</button>` : ''}
                                 <button class="task-note-btn ${hasNote ? 'has-note' : ''}" onclick="toggleTaskNote('${task.id}', event)">
                                     ${hasNote ? '📝 View Note' : '➕ Add Note'}
                                 </button>
                             </div>
+                            ${taskGuides[task.id] ? `<div class="task-guide-area" id="task-guide-${task.id}">${taskGuides[task.id]}</div>` : ''}
                             <div class="task-note-area" id="task-note-${task.id}">
                                 <div class="task-note-header">
                                     <span>📝 Task Notes</span>
@@ -1781,6 +2502,27 @@
             const targetContent = document.getElementById(`${dayId}-${noteType}-content`);
             if (targetContent) {
                 targetContent.classList.add('active');
+            }
+        }
+
+        // Toggle task guide visibility
+        function toggleTaskGuide(taskId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+
+            const guideArea = document.getElementById(`task-guide-${taskId}`);
+            if (guideArea) {
+                guideArea.classList.toggle('show');
+
+                // Update button text
+                const btn = event.target;
+                if (guideArea.classList.contains('show')) {
+                    btn.textContent = '📕 Hide Guide';
+                } else {
+                    btn.textContent = '📖 View Guide';
+                }
             }
         }
 
